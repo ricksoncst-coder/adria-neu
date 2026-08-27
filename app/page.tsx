@@ -271,28 +271,24 @@ export default function Home() {
 
         <div className="relative z-10 mx-auto max-w-5xl">
           <p className="text-xs uppercase tracking-[0.4em] text-[#d6b15c] sm:text-sm">
-            Willkommen im Restaurant Adria
-          </p>
-
-          <div className="mx-auto mt-8 flex h-48 w-48 items-center justify-center rounded-full border border-[#d6b15c]/60 sm:h-60 sm:w-60">
-            <div className="flex h-[88%] w-[88%] items-center justify-center rounded-full border border-[#d6b15c]/25">
-              <div>
-                <p className="font-serif text-4xl tracking-[0.12em] text-[#d6b15c] sm:text-5xl">
-                  ADRIA
-                </p>
-                <div className="mx-auto my-3 h-px w-24 bg-[#d6b15c]" />
-                <p className="text-[10px] uppercase tracking-[0.25em] text-[#d6b15c]">
-                  Restaurant
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <h1 className="mt-9 font-serif text-4xl text-white sm:text-6xl">
-            Balkanische Küche
+         
             <span className="block text-[#d6b15c]">Steak & Grill</span>
           </h1>
+<div className="relative z-10 mx-auto max-w-5xl">
+  <p className="text-xs uppercase tracking-[0.4em] text-[#d6b15c] sm:text-sm">
+    Willkommen im Restaurant Adria
+  </p>
 
+  <img
+    src="/adria-logo.png"
+    alt="Restaurant Adria"
+    className="mx-auto mt-8 w-full max-w-[700px] object-contain"
+  />
+
+  <h1 className="mt-9 font-serif text-4xl text-white sm:text-6xl">
+    Balkanische Küche
+    <span className="block text-[#d6b15c]">Steak & Grill</span>
+  </h1>
           <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-white/60 sm:text-lg">
             Traditioneller Geschmack, ausgewählte Spezialitäten und herzliche
             Gastfreundschaft in Rotenburg.
