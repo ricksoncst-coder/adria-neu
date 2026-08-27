@@ -271,15 +271,11 @@ export default function Home() {
             Willkommen im Restaurant Adria
           </p>
 
-          <img
-            src="/adria-logo.png"
-            alt="Restaurant Adria"
-            className="mx-auto mt-8 w-full max-w-[650px] object-contain"
-          />
+          
 
           <h1 className="mt-8 font-serif text-4xl text-white sm:text-6xl">
-            Balkanische Küche
-            <span className="block text-[#d6b15c]">Steak & Grill</span>
+            Balkan- und
+            <span className="block text-[#d6b15c]">internationale Küche</span>
           </h1>
 
           <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-white/60 sm:text-lg">
