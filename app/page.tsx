@@ -223,7 +223,7 @@ const menuSections = [
 export default function Home() {
   return (
     <main className="min-h-screen bg-[#061a3a] text-white">
-      {/* NAVIGATION */}
+      {/* Navigation */}
       <header className="sticky top-0 z-50 border-b border-[#d6b15c]/20 bg-[#061a3a]/95 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4">
           <div>
@@ -245,6 +245,9 @@ export default function Home() {
             <a href="#speisekarte" className="hover:text-[#d6b15c]">
               Speisekarte
             </a>
+            <a href="#ueber-uns" className="hover:text-[#d6b15c]">
+              Über uns
+            </a>
             <a href="#kontakt" className="hover:text-[#d6b15c]">
               Kontakt
             </a>
@@ -252,14 +255,14 @@ export default function Home() {
 
           <a
             href="tel:0426182301"
-            className="rounded-full border border-[#d6b15c] px-4 py-2 text-sm text-[#d6b15c]"
+            className="rounded-full border border-[#d6b15c] px-4 py-2 text-sm font-medium text-[#d6b15c] transition hover:bg-[#d6b15c] hover:text-[#061a3a]"
           >
             04261 82301
           </a>
         </div>
       </header>
 
-      {/* STARTSEITE */}
+      {/* Start */}
       <section
         id="start"
         className="relative flex min-h-[88vh] items-center justify-center overflow-hidden px-6 py-24 text-center"
@@ -271,11 +274,23 @@ export default function Home() {
             Willkommen im Restaurant Adria
           </p>
 
-          
+          <div className="mx-auto mt-8 flex h-48 w-48 items-center justify-center rounded-full border border-[#d6b15c]/60 sm:h-60 sm:w-60">
+            <div className="flex h-[88%] w-[88%] items-center justify-center rounded-full border border-[#d6b15c]/25">
+              <div>
+                <p className="font-serif text-4xl tracking-[0.12em] text-[#d6b15c] sm:text-5xl">
+                  ADRIA
+                </p>
+                <div className="mx-auto my-3 h-px w-24 bg-[#d6b15c]" />
+                <p className="text-[10px] uppercase tracking-[0.25em] text-[#d6b15c]">
+                  Restaurant
+                </p>
+              </div>
+            </div>
+          </div>
 
-          <h1 className="mt-8 font-serif text-4xl text-white sm:text-6xl">
-            Balkan- und
-            <span className="block text-[#d6b15c]">internationale Küche</span>
+          <h1 className="mt-9 font-serif text-4xl text-white sm:text-6xl">
+            Balkanische Küche
+            <span className="block text-[#d6b15c]">Steak & Grill</span>
           </h1>
 
           <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-white/60 sm:text-lg">
@@ -286,14 +301,14 @@ export default function Home() {
           <div className="mt-9 flex flex-col justify-center gap-4 sm:flex-row">
             <a
               href="#speisekarte"
-              className="rounded-full bg-[#d6b15c] px-8 py-4 font-semibold text-[#061a3a]"
+              className="rounded-full bg-[#d6b15c] px-8 py-4 font-semibold text-[#061a3a] transition hover:opacity-90"
             >
               Speisekarte entdecken
             </a>
 
             <a
               href="#angebote"
-              className="rounded-full border border-[#d6b15c] px-8 py-4 font-semibold text-[#d6b15c]"
+              className="rounded-full border border-[#d6b15c] px-8 py-4 font-semibold text-[#d6b15c] transition hover:bg-[#d6b15c] hover:text-[#061a3a]"
             >
               Aktuelle Angebote
             </a>
@@ -301,23 +316,21 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ANGEBOTE */}
+      {/* Angebote */}
       <section id="angebote" className="bg-[#03142e] px-5 py-24">
         <div className="mx-auto max-w-6xl">
           <div className="text-center">
             <p className="text-xs uppercase tracking-[0.4em] text-[#d6b15c]">
               Aktuell bei Adria
             </p>
-
             <h2 className="mt-4 font-serif text-4xl sm:text-5xl">
               Besondere Angebote
             </h2>
-
             <div className="mx-auto mt-7 h-px w-24 bg-[#d6b15c]" />
           </div>
 
           <div className="mt-14 grid gap-8 lg:grid-cols-2">
-            {/* PFIFFERLINGE */}
+            {/* Pfifferlinge */}
             <article className="rounded-3xl border border-[#d6b15c]/35 bg-[#071d3d] p-8 sm:p-10">
               <p className="text-xs uppercase tracking-[0.3em] text-[#d6b15c]">
                 Saisonangebot
@@ -355,7 +368,7 @@ export default function Home() {
               </p>
             </article>
 
-            {/* DAMENABEND */}
+            {/* Damenabend */}
             <article className="rounded-3xl border border-[#d6b15c]/50 bg-[#071d3d] p-8 sm:p-10">
               <p className="text-xs uppercase tracking-[0.3em] text-[#d6b15c]">
                 Jeden Mittwoch
@@ -436,7 +449,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* SPEISEKARTE */}
+      {/* Speisekarte */}
       <section id="speisekarte" className="px-5 py-24">
         <div className="mx-auto max-w-6xl">
           <div className="text-center">
@@ -456,11 +469,9 @@ export default function Home() {
               <section key={section.title}>
                 <div className="mb-10 flex items-center gap-4">
                   <div className="h-px flex-1 bg-[#d6b15c]/25" />
-
                   <h3 className="max-w-[75%] text-center font-serif text-2xl uppercase tracking-[0.12em] text-[#d6b15c] sm:text-3xl">
                     {section.title}
                   </h3>
-
                   <div className="h-px flex-1 bg-[#d6b15c]/25" />
                 </div>
 
@@ -492,8 +503,30 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ÖFFNUNGSZEITEN */}
-      <section className="bg-[#03142e] px-6 py-24">
+      {/* Über uns */}
+      <section id="ueber-uns" className="bg-[#03142e] px-6 py-24">
+        <div className="mx-auto max-w-4xl text-center">
+          <p className="text-xs uppercase tracking-[0.4em] text-[#d6b15c]">
+            Gastfreundschaft & Genuss
+          </p>
+
+          <h2 className="mt-5 font-serif text-4xl sm:text-5xl">
+            Willkommen bei Adria
+          </h2>
+
+          <div className="mx-auto my-8 h-px w-20 bg-[#d6b15c]" />
+
+          <p className="text-base leading-8 text-white/60 sm:text-lg">
+            Im Restaurant Adria verbinden wir traditionelle Balkanküche mit
+            ausgewählten internationalen Gerichten. Freuen Sie sich auf
+            Grillspezialitäten, frische Zutaten und einen gemütlichen
+            Restaurantbesuch in Rotenburg.
+          </p>
+        </div>
+      </section>
+
+      {/* Öffnungszeiten */}
+      <section className="px-6 py-24">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-xs uppercase tracking-[0.4em] text-[#d6b15c]">
             Wir freuen uns auf Sie
@@ -503,7 +536,7 @@ export default function Home() {
             Öffnungszeiten
           </h2>
 
-          <div className="mx-auto mt-10 max-w-xl rounded-3xl border border-[#d6b15c]/30 bg-[#061a3a] p-7 sm:p-9">
+          <div className="mx-auto mt-10 max-w-xl rounded-3xl border border-[#d6b15c]/30 bg-[#03142e] p-7 sm:p-9">
             <div className="border-b border-white/10 py-4 sm:flex sm:justify-between">
               <span>Dienstag – Sonntag</span>
               <span className="mt-1 block text-[#d6b15c] sm:mt-0">
@@ -528,21 +561,21 @@ export default function Home() {
         </div>
       </section>
 
-      {/* KONTAKT */}
-      <section id="kontakt" className="px-6 py-24">
+      {/* Kontakt */}
+      <section id="kontakt" className="bg-[#03142e] px-6 py-24">
         <div className="mx-auto max-w-5xl text-center">
           <p className="text-xs uppercase tracking-[0.4em] text-[#d6b15c]">
             Besuchen Sie uns
           </p>
 
           <h2 className="mt-5 font-serif text-4xl sm:text-5xl">
-            Restaurant Adria
+            Kontakt & Anfahrt
           </h2>
 
           <div className="mt-12 grid gap-6 md:grid-cols-2">
-            <div className="rounded-3xl border border-[#d6b15c]/30 bg-[#03142e] p-10">
+            <div className="rounded-3xl border border-[#d6b15c]/30 bg-[#061a3a] p-10">
               <p className="text-xs uppercase tracking-[0.25em] text-white/40">
-                Adresse
+                Restaurant Adria
               </p>
 
               <p className="mt-5 font-serif text-2xl text-[#d6b15c]">
@@ -554,7 +587,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="rounded-3xl border border-[#d6b15c]/30 bg-[#03142e] p-10">
+            <div className="rounded-3xl border border-[#d6b15c]/30 bg-[#061a3a] p-10">
               <p className="text-xs uppercase tracking-[0.25em] text-white/40">
                 Telefon
               </p>
@@ -581,7 +614,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FOOTER */}
+      {/* Footer */}
       <footer className="border-t border-[#d6b15c]/20 bg-[#020d20] px-6 py-12 text-center">
         <p className="font-serif text-2xl tracking-[0.18em] text-[#d6b15c]">
           RESTAURANT ADRIA
