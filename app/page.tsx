@@ -1,239 +1,52 @@
 import { createClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
-
-const menuSections = [
-  {
-    title: "Ein bisschen vorweg",
-    items: [
-      {
-        name: "Hausgemachtes Zaziki",
-        price: "5,50 €",
-        description: "Mit Knoblauchbrot",
-      },
-      {
-        name: "Mozzarella im Serranoschinken",
-        price: "12,90 €",
-        description:
-          "Gegrillter Mozzarella im Serranomantel mit Röstbrot und Salatbeilage",
-      },
-      {
-        name: "Gebackene Mozzarella-Bällchen",
-        price: "11,90 €",
-        description:
-          "Knusprig panierte Mozzarella-Bällchen mit Knoblauchbrot und Salatbeilage",
-      },
-      {
-        name: "Panierter Hirtenkäse",
-        price: "9,90 €",
-        description:
-          "Knusprig panierter Hirtenkäse mit Röstbrot und Salatbeilage",
-      },
-    ],
-  },
-  {
-    title: "Specials",
-    items: [
-      {
-        name: "Blattsalat mit Knoblauch-Chili-Garnelen",
-        price: "26,90 €",
-        description:
-          "Tomaten, Gurken, rote Zwiebeln, Paprika, Fregola Sarda, Kichererbsen, Parmesan und hausgemachte Balsamico-Vinaigrette",
-      },
-      {
-        name: "Blattsalat mit gegrillten Pilzen",
-        price: "18,90 €",
-        description:
-          "Halloumi-Grillkäse, Tomaten, Gurken, rote Zwiebeln, Paprika, Fregola, Kichererbsen und hausgemachte Balsamico-Vinaigrette",
-      },
-      {
-        name: "Blattsalat mit gegrilltem Rumpsteak",
-        price: "27,50 €",
-        description:
-          "Tomaten, Gurken, rote Zwiebeln, Paprika, Fregola Sarda, Kichererbsen, Parmesan und hausgemachte Balsamico-Vinaigrette",
-      },
-      {
-        name: "Knusprige Riesengarnelen",
-        price: "27,50 €",
-        description:
-          "Rote Zwiebeln, Paprika, Kirschtomaten, Avocado, Fregola Sarda, Knoblauchsauce, Trüffelcreme und Dip-Pommes",
-      },
-      {
-        name: "Grillgemüse",
-        price: "16,90 €",
-        description: "Dazu Knoblauchbrot",
-      },
-      {
-        name: "Aubergine und Zucchini überbacken",
-        price: "18,90 €",
-        description:
-          "Gegrillte Aubergine und Zucchini in Tomatensauce, mit Mozzarella und Parmesan überbacken, dazu Knoblauchbrot",
-      },
-      {
-        name: "Pilzschnitzelchen",
-        price: "17,90 €",
-        description:
-          "In Pankomehl panierte Pilze, rote Zwiebeln, Paprika, Knoblauchsauce, Trüffelcreme und Pommes frites",
-      },
-      {
-        name: "Joka-Pfanne",
-        price: "19,90 €",
-        description:
-          "Geschnetzeltes Schweinefilet mit Tomaten, Paprika, Zwiebeln und Champignons in einer pikanten Sauce, dazu Butterreis",
-      },
-    ],
-  },
-  {
-    title: "Highlights",
-    items: [
-      {
-        name: "Mediterranes Rumpsteak",
-        price: "32,90 €",
-        description:
-          "Grillgemüse, Fregola Sarda, Rucolasalat, Chiliöl, Parmesan und Knoblauchbrot",
-      },
-      {
-        name: "Schweinefilet",
-        price: "25,90 €",
-        description:
-          "In pikanter Chili-Tomatensauce, mit Mozzarella und Tomate überbacken, dazu Kroketten",
-      },
-      {
-        name: "Surf ’n’ Turf",
-        price: "32,90 €",
-        description:
-          "Rumpsteak, knusprige Riesengarnelen, frische Champignons, Rucola, Paprika, Kirschtomaten, Parmesan, Trüffelöl und Dip-Pommes",
-      },
-      {
-        name: "Schweinefilet im Speckmantel mit Scampispieß",
-        price: "27,90 €",
-        description: "Dazu Kroketten",
-      },
-      {
-        name: "Schweinefilet Special",
-        price: "24,50 €",
-        description:
-          "Avocado, Jalapeños, Kirschtomaten, Chiliöl, Paprika, Rucola, Parmesan und Pommes frites",
-      },
-      {
-        name: "Karamellisiertes Lachsfilet",
-        price: "28,90 €",
-        description:
-          "Grillgemüse, Fregola Sarda, Chiliöl, Parmesan, Rucola und Knoblauchbrot",
-      },
-      {
-        name: "Kabeljau-Piccata",
-        price: "28,90 €",
-        description:
-          "Kabeljaufilet in Parmesanhülle, rote Zwiebeln, Paprika, Knoblauchsauce, Trüffelcreme und Dip-Pommes",
-      },
-    ],
-  },
-  {
-    title: "Klassiker",
-    items: [
-      {
-        name: "Grillteller",
-        price: "21,50 €",
-        description:
-          "Hacksteak, Schweinelachs, Nackensteak, Ćevapčići und Bauchspeck mit Pommes frites und Djuveč-Reis",
-      },
-      {
-        name: "Steakteller",
-        price: "25,90 €",
-        description:
-          "Rumpsteak, Schweinefiletmedaillon und Hähnchenbrust mit Dip-Pommes",
-      },
-      {
-        name: "Mix Grill",
-        price: "18,90 €",
-        description:
-          "Hähnchenbrust, Hacksteak und Nackensteak mit Pommes frites und Djuveč-Reis",
-      },
-      {
-        name: "Schweinefiletröllchen",
-        price: "25,90 €",
-        description:
-          "Gefüllt mit Kochschinken und Käse, dazu Kroketten",
-      },
-      {
-        name: "Schweinefiletmedaillons am Spieß",
-        price: "25,90 €",
-        description:
-          "Mit Paprika, Zwiebeln, Bauchspeck und Djuveč-Reis",
-      },
-      {
-        name: "Argentinisches Rumpsteak",
-        price: "28,90 €",
-        description: "Mit Dip-Pommes",
-      },
-      {
-        name: "Cordon Bleu",
-        price: "23,90 €",
-        description:
-          "Putenbrust mit Kochschinken und Käse gefüllt, dazu Kroketten",
-      },
-      {
-        name: "Hacksteak Montenegro",
-        price: "18,90 €",
-        description: "Mit Hirtenkäse gefüllt, dazu Djuveč-Reis",
-      },
-      {
-        name: "Hausplatte für zwei Personen",
-        price: "52,00 €",
-        description:
-          "Rumpsteak, mit Hirtenkäse gefülltes Hacksteak, Hähnchenbrust, Schweinefiletmedaillons und Gemüse mit Sauce Hollandaise, dazu Pommes frites und Djuveč-Reis",
-      },
-      {
-        name: "Grillplatte für zwei Personen",
-        price: "48,00 €",
-        description:
-          "Zwei Hacksteaks, zwei Nackensteaks, Ćevapčići, zwei Stück Bauchspeck und zwei Stück Leber",
-      },
-    ],
-  },
-  {
-    title: "Gerichte für Kinder",
-    items: [
-      {
-        name: "Hähnchenschnitzel",
-        price: "9,90 €",
-        description: "Mit Pommes frites",
-      },
-      {
-        name: "Ćevapčići",
-        price: "9,90 €",
-        description: "Mit Djuveč-Reis",
-      },
-    ],
-  },
-  {
-    title: "Süßes Finale",
-    items: [
-      {
-        name: "Vanilleeis mit heißen Kirschen",
-        price: "8,90 €",
-        description: "Mit Obst der Saison",
-      },
-      {
-        name: "Vanilleeis mit heißer Schokolade",
-        price: "8,90 €",
-        description: "Mit Obst der Saison",
-      },
-    ],
-  },
-];
+export const revalidate = 0;
 
 type SiteSettings = {
   [key: string]: string;
 };
 
+type MenuItem = {
+  id: number;
+  category: string;
+  name: string;
+  description: string | null;
+  price: number | string | null;
+  sort_order: number | null;
+};
+
+type Offer = {
+  id: number;
+  slug: string;
+  title: string;
+  subtitle: string | null;
+  description: string | null;
+  price: number | string | null;
+  active: boolean;
+  sort_order: number | null;
+  content: any;
+};
+
+const categoryOrder = [
+  "Ein bisschen vorweg",
+  "Specials",
+  "Highlights",
+  "Klassiker",
+  "Gerichte für Kinder",
+  "Süßes Finale",
+];
+
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
+  );
+}
+
 async function getSiteSettings(): Promise<SiteSettings> {
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-    );
+    const supabase = getSupabase();
 
     const { data, error } = await supabase
       .from("site_settings")
@@ -257,6 +70,68 @@ async function getSiteSettings(): Promise<SiteSettings> {
   }
 }
 
+async function getMenuItems(): Promise<MenuItem[]> {
+  try {
+    const supabase = getSupabase();
+
+    const { data, error } = await supabase
+      .from("menu_items")
+      .select("id,category,name,description,price,sort_order")
+      .order("sort_order", { ascending: true });
+
+    if (error || !data) {
+      console.error("Fehler beim Laden der Speisekarte:", error);
+      return [];
+    }
+
+    return data as MenuItem[];
+  } catch (error) {
+    console.error("Speisekarte Supabase Fehler:", error);
+    return [];
+  }
+}
+
+async function getOffers(): Promise<Offer[]> {
+  try {
+    const supabase = getSupabase();
+
+    const { data, error } = await supabase
+      .from("offers")
+      .select(
+        "id,slug,title,subtitle,description,price,active,sort_order,content"
+      )
+      .eq("active", true)
+      .order("sort_order", { ascending: true });
+
+    if (error || !data) {
+      console.error("Fehler beim Laden der Angebote:", error);
+      return [];
+    }
+
+    return data as Offer[];
+  } catch (error) {
+    console.error("Angebote Supabase Fehler:", error);
+    return [];
+  }
+}
+
+function formatPrice(price: number | string | null | undefined) {
+  if (price === null || price === undefined || price === "") {
+    return "";
+  }
+
+  const number = Number(price);
+
+  if (Number.isNaN(number)) {
+    return String(price);
+  }
+
+  return new Intl.NumberFormat("de-DE", {
+    style: "currency",
+    currency: "EUR",
+  }).format(number);
+}
+
 function RestaurantImage({
   src,
   alt,
@@ -276,38 +151,109 @@ function RestaurantImage({
 }
 
 export default async function Home() {
-  const settings = await getSiteSettings();
+  const [settings, menuItems, offers] = await Promise.all([
+    getSiteSettings(),
+    getMenuItems(),
+    getOffers(),
+  ]);
 
-  const heroImage = settings.hero_image || "/restaurant-3.jpg";
+  const heroImage =
+    settings.hero_image || "/restaurant-3.jpg";
+
   const restaurantImage1 =
     settings.restaurant_image_1 || "/restaurant-1.jpg";
+
   const restaurantImage2 =
     settings.restaurant_image_2 || "/restaurant-2.jpg";
+
   const restaurantImage3 =
     settings.restaurant_image_3 || "/restaurant-3.jpg";
+
   const restaurantImage4 =
     settings.restaurant_image_4 || "/restaurant-4.jpg";
+
+  const menuSections = categoryOrder
+    .map((category) => ({
+      title: category,
+      items: menuItems
+        .filter((item) => item.category === category)
+        .sort(
+          (a, b) =>
+            (a.sort_order ?? 0) - (b.sort_order ?? 0)
+        ),
+    }))
+    .filter((section) => section.items.length > 0);
+
+  const otherCategories = Array.from(
+    new Set(
+      menuItems
+        .map((item) => item.category)
+        .filter(
+          (category) =>
+            category &&
+            !categoryOrder.includes(category)
+        )
+    )
+  );
+
+  for (const category of otherCategories) {
+    menuSections.push({
+      title: category,
+      items: menuItems
+        .filter((item) => item.category === category)
+        .sort(
+          (a, b) =>
+            (a.sort_order ?? 0) - (b.sort_order ?? 0)
+        ),
+    });
+  }
+
+  const ladiesOffer = offers.find(
+    (offer) => offer.slug === "damenabend"
+  );
+
+  const seasonalOffer = offers.find(
+    (offer) => offer.slug === "pfifferlinge"
+  );
 
   return (
     <main className="bg-[#f6f1e8] text-[#17130f]">
       {/* HEADER */}
       <header className="fixed left-0 right-0 top-0 z-50 border-b border-white/10 bg-[#11100e]/95 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 md:px-8">
-          <a href="#" className="text-xl font-semibold tracking-[0.12em] text-[#d8b66b]">
+          <a
+            href="#"
+            className="text-xl font-semibold tracking-[0.12em] text-[#d8b66b]"
+          >
             RESTAURANT ADRIA
           </a>
 
           <nav className="hidden items-center gap-8 text-sm text-white/80 lg:flex">
-            <a href="#ueber-uns" className="transition hover:text-[#d8b66b]">
+            <a
+              href="#ueber-uns"
+              className="transition hover:text-[#d8b66b]"
+            >
               Über uns
             </a>
-            <a href="#angebote" className="transition hover:text-[#d8b66b]">
+
+            <a
+              href="#angebote"
+              className="transition hover:text-[#d8b66b]"
+            >
               Angebote
             </a>
-            <a href="#speisekarte" className="transition hover:text-[#d8b66b]">
+
+            <a
+              href="#speisekarte"
+              className="transition hover:text-[#d8b66b]"
+            >
               Speisekarte
             </a>
-            <a href="#kontakt" className="transition hover:text-[#d8b66b]">
+
+            <a
+              href="#kontakt"
+              className="transition hover:text-[#d8b66b]"
+            >
               Kontakt
             </a>
           </nav>
@@ -344,9 +290,9 @@ export default async function Home() {
             </h1>
 
             <p className="mt-7 max-w-2xl text-lg leading-8 text-white/80 md:text-xl">
-              Genießen Sie besondere Momente in gemütlicher Atmosphäre mit
-              Balkan-Klassikern, internationalen Spezialitäten und herzlicher
-              Gastfreundschaft.
+              Genießen Sie besondere Momente in gemütlicher Atmosphäre
+              mit Balkan-Klassikern, internationalen Spezialitäten und
+              herzlicher Gastfreundschaft.
             </p>
 
             <div className="mt-10 flex flex-wrap gap-4">
@@ -369,7 +315,10 @@ export default async function Home() {
       </section>
 
       {/* ÜBER UNS */}
-      <section id="ueber-uns" className="px-5 py-24 md:px-8 md:py-32">
+      <section
+        id="ueber-uns"
+        className="px-5 py-24 md:px-8 md:py-32"
+      >
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-14 lg:grid-cols-2 lg:items-center">
             <div>
@@ -382,16 +331,16 @@ export default async function Home() {
               </h2>
 
               <p className="mt-7 text-lg leading-8 text-black/65">
-                Im Restaurant Adria verbinden wir traditionelle Balkan-Küche
-                mit internationalen Gerichten. Frische Zutaten, herzhafte
-                Grillgerichte und eine angenehme Atmosphäre stehen bei uns im
-                Mittelpunkt.
+                Im Restaurant Adria verbinden wir traditionelle
+                Balkan-Küche mit internationalen Gerichten. Frische
+                Zutaten, herzhafte Grillgerichte und eine angenehme
+                Atmosphäre stehen bei uns im Mittelpunkt.
               </p>
 
               <p className="mt-5 text-lg leading-8 text-black/65">
-                Ob ein gemütliches Abendessen, ein Treffen mit Freunden oder
-                ein besonderer Anlass – wir freuen uns darauf, Sie bei uns
-                begrüßen zu dürfen.
+                Ob ein gemütliches Abendessen, ein Treffen mit Freunden
+                oder ein besonderer Anlass – wir freuen uns darauf, Sie
+                bei uns begrüßen zu dürfen.
               </p>
             </div>
 
@@ -429,112 +378,175 @@ export default async function Home() {
       </section>
 
       {/* ANGEBOTE */}
-      <section id="angebote" className="bg-[#171512] px-5 py-24 text-white md:px-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-14 max-w-3xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#d8b66b]">
-              Aktuelle Angebote
-            </p>
-
-            <h2 className="mt-4 text-4xl font-semibold md:text-5xl">
-              Besondere Genussmomente
-            </h2>
-          </div>
-
-          <div className="grid gap-6 lg:grid-cols-2">
-            <article className="rounded-[30px] border border-white/10 bg-white/[0.04] p-8 md:p-10">
-              <p className="text-sm uppercase tracking-[0.25em] text-[#d8b66b]">
-                Saisonangebot
+      {(seasonalOffer || ladiesOffer) && (
+        <section
+          id="angebote"
+          className="bg-[#171512] px-5 py-24 text-white md:px-8"
+        >
+          <div className="mx-auto max-w-7xl">
+            <div className="mb-14 max-w-3xl">
+              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#d8b66b]">
+                Aktuelle Angebote
               </p>
 
-              <h3 className="mt-4 text-3xl font-semibold">
-                Pfifferlinge
-              </h3>
+              <h2 className="mt-4 text-4xl font-semibold md:text-5xl">
+                Besondere Genussmomente
+              </h2>
+            </div>
 
-              <div className="mt-8 space-y-7">
-                <div>
-                  <h4 className="text-xl font-semibold">
-                    Schweinefilet mit Pfifferlingen
-                  </h4>
-                  <p className="mt-2 text-white/65">
-                    Zartes Schweinefilet mit frischen Pfifferlingen.
+            <div className="grid gap-6 lg:grid-cols-2">
+              {/* SAISONANGEBOT */}
+              {seasonalOffer && (
+                <article className="rounded-[30px] border border-white/10 bg-white/[0.04] p-8 md:p-10">
+                  <p className="text-sm uppercase tracking-[0.25em] text-[#d8b66b]">
+                    {seasonalOffer.subtitle || "Saisonangebot"}
                   </p>
-                </div>
 
-                <div>
-                  <h4 className="text-xl font-semibold">
-                    Argentinisches Rumpsteak mit Pfifferlingen
-                  </h4>
-                  <p className="mt-2 text-white/65">
-                    Saftiges argentinisches Rumpsteak mit frischen
-                    Pfifferlingen.
+                  <h3 className="mt-4 text-3xl font-semibold">
+                    {seasonalOffer.title}
+                  </h3>
+
+                  {seasonalOffer.description && (
+                    <p className="mt-3 text-white/65">
+                      {seasonalOffer.description}
+                    </p>
+                  )}
+
+                  <div className="mt-8 space-y-7">
+                    {(seasonalOffer.content?.dishes || []).map(
+                      (
+                        dish: {
+                          name?: string;
+                          description?: string;
+                          price?: number | string | null;
+                        },
+                        index: number
+                      ) => (
+                        <div key={`${dish.name}-${index}`}>
+                          <div className="flex items-start justify-between gap-5">
+                            <h4 className="text-xl font-semibold">
+                              {dish.name}
+                            </h4>
+
+                            {dish.price !== null &&
+                              dish.price !== undefined &&
+                              dish.price !== "" && (
+                                <span className="shrink-0 font-semibold text-[#d8b66b]">
+                                  {formatPrice(dish.price)}
+                                </span>
+                              )}
+                          </div>
+
+                          {dish.description && (
+                            <p className="mt-2 text-white/65">
+                              {dish.description}
+                            </p>
+                          )}
+                        </div>
+                      )
+                    )}
+                  </div>
+
+                  {seasonalOffer.content?.note && (
+                    <p className="mt-8 text-sm italic text-white/50">
+                      {seasonalOffer.content.note}
+                    </p>
+                  )}
+                </article>
+              )}
+
+              {/* DAMENABEND */}
+              {ladiesOffer && (
+                <article className="rounded-[30px] border border-[#d8b66b]/30 bg-[#d8b66b]/10 p-8 md:p-10">
+                  <p className="text-sm uppercase tracking-[0.25em] text-[#d8b66b]">
+                    {ladiesOffer.subtitle || "Jeden Mittwoch"}
                   </p>
-                </div>
-              </div>
 
-              <p className="mt-8 text-sm italic text-white/50">
-                Nur solange Pfifferlinge verfügbar sind.
-              </p>
-            </article>
+                  <div className="mt-4 flex items-end justify-between gap-5">
+                    <h3 className="text-3xl font-semibold">
+                      {ladiesOffer.title}
+                    </h3>
 
-            <article className="rounded-[30px] border border-[#d8b66b]/30 bg-[#d8b66b]/10 p-8 md:p-10">
-              <p className="text-sm uppercase tracking-[0.25em] text-[#d8b66b]">
-                Jeden Mittwoch
-              </p>
+                    {ladiesOffer.price !== null &&
+                      ladiesOffer.price !== undefined && (
+                        <span className="text-2xl font-semibold text-[#d8b66b]">
+                          {formatPrice(ladiesOffer.price)}
+                        </span>
+                      )}
+                  </div>
 
-              <div className="mt-4 flex items-end justify-between gap-5">
-                <h3 className="text-3xl font-semibold">
-                  Damenabend
-                </h3>
+                  {ladiesOffer.description && (
+                    <p className="mt-3 text-white/65">
+                      {ladiesOffer.description}
+                    </p>
+                  )}
 
-                <span className="text-2xl font-semibold text-[#d8b66b]">
-                  24,90 €
-                </span>
-              </div>
+                  <div className="mt-8 space-y-5 text-white/85">
+                    {ladiesOffer.content?.aperitif && (
+                      <p>
+                        <strong className="text-white">
+                          Aperitif:
+                        </strong>{" "}
+                        {ladiesOffer.content.aperitif}
+                      </p>
+                    )}
 
-              <p className="mt-3 text-white/65">
-                Genießen • Anstoßen • Gemeinsam einen schönen Abend verbringen
-              </p>
+                    {ladiesOffer.content?.salad && (
+                      <p>
+                        <strong className="text-white">
+                          Salat:
+                        </strong>{" "}
+                        {ladiesOffer.content.salad}
+                      </p>
+                    )}
 
-              <div className="mt-8 space-y-5 text-white/85">
-                <p>
-                  <strong className="text-white">Aperitif:</strong> Aperol
-                  Spritz
-                </p>
+                    {(ladiesOffer.content?.mains || []).length > 0 && (
+                      <div>
+                        <strong className="text-white">
+                          Hauptgericht nach Wahl:
+                        </strong>
 
-                <p>
-                  <strong className="text-white">Salat:</strong> Frischer Salat
-                  vom Buffet
-                </p>
+                        <div className="mt-4 space-y-4">
+                          {(ladiesOffer.content?.mains || []).map(
+                            (
+                              main: {
+                                name?: string;
+                                description?: string;
+                              },
+                              index: number
+                            ) => (
+                              <div
+                                key={`${main.name}-${index}`}
+                                className="border-b border-white/10 pb-4"
+                              >
+                                <p className="font-semibold text-white">
+                                  {main.name}
+                                </p>
 
-                <div>
-                  <strong className="text-white">Hauptgericht nach Wahl:</strong>
-
-                  <ul className="mt-4 space-y-3 text-white/70">
-                    <li>
-                      Gegrilltes Hähnchenfilet mit frischem Blattsalat
-                    </li>
-                    <li>
-                      Putensteak Hawaii mit Ananas und Käse gratiniert, dazu
-                      Kroketten
-                    </li>
-                    <li>
-                      Pola-Pola mit Ćevapčići, Pljeskavica, Djuveč-Reis und
-                      Pommes frites
-                    </li>
-                    <li>
-                      Grillgemüse mit knusprigem Röstbrot
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </article>
+                                {main.description && (
+                                  <p className="mt-1 text-white/65">
+                                    {main.description}
+                                  </p>
+                                )}
+                              </div>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </article>
+              )}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* SPEISEKARTE */}
-      <section id="speisekarte" className="px-5 py-24 md:px-8 md:py-32">
+      <section
+        id="speisekarte"
+        className="px-5 py-24 md:px-8 md:py-32"
+      >
         <div className="mx-auto max-w-7xl">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#a37c2f]">
@@ -546,45 +558,60 @@ export default async function Home() {
             </h2>
 
             <p className="mt-5 text-lg leading-8 text-black/60">
-              Balkan-Spezialitäten, Grillgerichte und internationale Klassiker.
+              Balkan-Spezialitäten, Grillgerichte und internationale
+              Klassiker.
             </p>
           </div>
 
-          <div className="space-y-16">
-            {menuSections.map((section) => (
-              <section key={section.title}>
-                <div className="mb-8 flex items-center gap-5">
-                  <h3 className="whitespace-nowrap text-2xl font-semibold md:text-3xl">
-                    {section.title}
-                  </h3>
-                  <div className="h-px w-full bg-black/15" />
-                </div>
+          {menuSections.length > 0 ? (
+            <div className="space-y-16">
+              {menuSections.map((section) => (
+                <section key={section.title}>
+                  <div className="mb-8 flex items-center gap-5">
+                    <h3 className="whitespace-nowrap text-2xl font-semibold md:text-3xl">
+                      {section.title}
+                    </h3>
 
-                <div className="grid gap-x-12 gap-y-8 lg:grid-cols-2">
-                  {section.items.map((item) => (
-                    <article
-                      key={item.name}
-                      className="border-b border-black/10 pb-6"
-                    >
-                      <div className="flex items-start justify-between gap-5">
-                        <h4 className="text-lg font-semibold">
-                          {item.name}
-                        </h4>
+                    <div className="h-px w-full bg-black/15" />
+                  </div>
 
-                        <span className="shrink-0 font-semibold text-[#926d25]">
-                          {item.price}
-                        </span>
-                      </div>
+                  <div className="grid gap-x-12 gap-y-8 lg:grid-cols-2">
+                    {section.items.map((item) => (
+                      <article
+                        key={item.id}
+                        className="border-b border-black/10 pb-6"
+                      >
+                        <div className="flex items-start justify-between gap-5">
+                          <h4 className="text-lg font-semibold">
+                            {item.name}
+                          </h4>
 
-                      <p className="mt-2 leading-7 text-black/55">
-                        {item.description}
-                      </p>
-                    </article>
-                  ))}
-                </div>
-              </section>
-            ))}
-          </div>
+                          {item.price !== null &&
+                            item.price !== undefined && (
+                              <span className="shrink-0 font-semibold text-[#926d25]">
+                                {formatPrice(item.price)}
+                              </span>
+                            )}
+                        </div>
+
+                        {item.description && (
+                          <p className="mt-2 leading-7 text-black/55">
+                            {item.description}
+                          </p>
+                        )}
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl bg-white p-8 text-center">
+              <p className="text-black/60">
+                Die Speisekarte wird momentan aktualisiert.
+              </p>
+            </div>
+          )}
         </div>
       </section>
 
@@ -634,12 +661,15 @@ export default async function Home() {
       </section>
 
       {/* KONTAKT */}
-      <section id="kontakt" className="bg-[#11100e] px-5 py-24 text-white md:px-8">
+      <section
+        id="kontakt"
+        className="bg-[#11100e] px-5 py-24 text-white md:px-8"
+      >
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-14 lg:grid-cols-2">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#d8b66b]">
-                Kontakt & Reservierung
+                Kontakt &amp; Reservierung
               </p>
 
               <h2 className="mt-4 text-4xl font-semibold md:text-5xl">
