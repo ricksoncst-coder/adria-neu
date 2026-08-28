@@ -1,67 +1,134 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase-browser";
+
+type MenuItem = {
+  id: number;
+  category: string;
+  name: string;
+  description: string | null;
+  price: number | null;
+  sort_order: number | null;
+};
+
+type MainDish = {
+  name: string;
+  description: string;
+};
+
+type SeasonalDish = {
+  name: string;
+  description: string;
+  price: number | null;
+};
+
+type Offer = {
+  id: number;
+  slug: string;
+  title: string;
+  subtitle: string | null;
+  description: string | null;
+  price: number | null;
+  active: boolean;
+  sort_order: number | null;
+  content: any;
+};
+
+type SiteSetting = {
+  key: string;
+  value: string;
+};
 
 const imageSlots = [
   {
     key: "hero_image",
-    title: "Startseiten-Hintergrund",
-    description: "Das große Hintergrundbild oben auf der Website",
+    label: "Startseiten-Hintergrund",
   },
   {
     key: "restaurant_image_1",
-    title: "Restaurantbild 1",
-    description: "Gastraum / Backsteinbögen",
+    label: "Restaurant Bild 1",
   },
   {
     key: "restaurant_image_2",
-    title: "Restaurantbild 2",
-    description: "Weinwand",
+    label: "Restaurant Bild 2",
   },
   {
     key: "restaurant_image_3",
-    title: "Restaurantbild 3",
-    description: "Theke / Bar",
+    label: "Restaurant Bild 3",
   },
   {
     key: "restaurant_image_4",
-    title: "Restaurantbild 4",
-    description: "Außenbereich / Terrasse",
+    label: "Restaurant Bild 4",
   },
 ];
 
+const categories = [
+  "Ein bisschen vorweg",
+  "Specials",
+  "Highlights",
+  "Klassiker",
+  "Gerichte für Kinder",
+  "Süßes Finale",
+];
+
 export default function AdminPage() {
+  const [loading, setLoading] = useState(true);
+  const [loggedIn, setLoggedIn] = useState(false);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+
   const [message, setMessage] = useState("");
-  const [images, setImages] = useState<Record<string, string>>({});
-  const [uploading, setUploading] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const [settings, setSettings] = useState<Record<string, string>>({});
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [offers, setOffers] = useState<Offer[]>([]);
+
+  const [selectedCategory, setSelectedCategory] = useState("Alle");
 
   useEffect(() => {
-    checkLogin();
+    checkSession();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setLoggedIn(!!session);
+
+      if (session) {
+        loadEverything();
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
-  async function checkLogin() {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+  async function checkSession() {
+    const { data } = await supabase.auth.getSession();
 
-    if (session) {
+    if (data.session) {
       setLoggedIn(true);
-      await loadImages();
+      await loadEverything();
     }
 
     setLoading(false);
   }
 
-  async function handleLogin(e: React.FormEvent) {
-    e.preventDefault();
+  async function loadEverything() {
+    await Promise.all([
+      loadSettings(),
+      loadMenu(),
+      loadOffers(),
+    ]);
+  }
 
-    setError("");
+  async function login(event: FormEvent) {
+    event.preventDefault();
+
+    setBusy(true);
     setMessage("");
 
     const { error } = await supabase.auth.signInWithPassword({
@@ -70,60 +137,63 @@ export default function AdminPage() {
     });
 
     if (error) {
-      setError("E-Mail oder Passwort ist falsch.");
-      return;
+      setMessage("Anmeldung fehlgeschlagen: " + error.message);
+    } else {
+      setMessage("Erfolgreich angemeldet.");
     }
 
-    setLoggedIn(true);
-    await loadImages();
+    setBusy(false);
   }
 
-  async function handleLogout() {
+  async function logout() {
     await supabase.auth.signOut();
-
     setLoggedIn(false);
-    setEmail("");
-    setPassword("");
-    setImages({});
     setMessage("");
-    setError("");
   }
 
-  async function loadImages() {
+  // --------------------------------------------------
+  // BILDER
+  // --------------------------------------------------
+
+  async function loadSettings() {
     const { data, error } = await supabase
       .from("site_settings")
       .select("key,value");
 
     if (error) {
       console.error(error);
-      setError("Die gespeicherten Bilder konnten nicht geladen werden.");
       return;
     }
 
-    const result: Record<string, string> = {};
+    const nextSettings: Record<string, string> = {};
 
-    data?.forEach((item) => {
-      result[item.key] = item.value;
+    (data as SiteSetting[] | null)?.forEach((item) => {
+      nextSettings[item.key] = item.value;
     });
 
-    setImages(result);
+    setSettings(nextSettings);
   }
 
-  async function uploadImage(key: string, file: File) {
+  async function uploadImage(
+    key: string,
+    file: File | undefined
+  ) {
+    if (!file) return;
+
+    if (file.size > 8 * 1024 * 1024) {
+      setMessage("Das Bild darf maximal 8 MB groß sein.");
+      return;
+    }
+
+    setBusy(true);
+    setMessage("Bild wird hochgeladen ...");
+
     try {
-      setUploading(key);
-      setMessage("");
-      setError("");
-
-      if (file.size > 8 * 1024 * 1024) {
-        setError("Das Bild ist zu groß. Bitte maximal 8 MB verwenden.");
-        return;
-      }
-
       const extension =
         file.name.split(".").pop()?.toLowerCase() || "jpg";
 
-      const fileName = `${key}-${Date.now()}.${extension}`;
+      const fileName =
+        `${key}-${Date.now()}.${extension}`;
 
       const { error: uploadError } = await supabase.storage
         .from("website-images")
@@ -136,11 +206,11 @@ export default function AdminPage() {
         throw uploadError;
       }
 
-      const {
-        data: { publicUrl },
-      } = supabase.storage
+      const { data } = supabase.storage
         .from("website-images")
         .getPublicUrl(fileName);
+
+      const publicUrl = data.publicUrl;
 
       const { error: saveError } = await supabase
         .from("site_settings")
@@ -159,296 +229,1263 @@ export default function AdminPage() {
         throw saveError;
       }
 
-      setImages((current) => ({
+      setSettings((current) => ({
         ...current,
         [key]: publicUrl,
       }));
 
-      setMessage("Bild wurde erfolgreich gespeichert.");
-    } catch (err) {
-      console.error(err);
-      setError("Das Bild konnte nicht gespeichert werden.");
-    } finally {
-      setUploading(null);
+      setMessage(
+        "Bild wurde gespeichert und ist jetzt mit der Website verbunden."
+      );
+    } catch (error: any) {
+      console.error(error);
+      setMessage(
+        "Fehler beim Hochladen: " +
+          (error?.message || "Unbekannter Fehler")
+      );
     }
+
+    setBusy(false);
   }
+
+  // --------------------------------------------------
+  // SPEISEKARTE
+  // --------------------------------------------------
+
+  async function loadMenu() {
+    const { data, error } = await supabase
+      .from("menu_items")
+      .select("*")
+      .order("category", { ascending: true })
+      .order("sort_order", { ascending: true });
+
+    if (error) {
+      console.error(error);
+      setMessage("Speisekarte konnte nicht geladen werden.");
+      return;
+    }
+
+    setMenuItems((data || []) as MenuItem[]);
+  }
+
+  function changeMenuItem(
+    id: number,
+    field: keyof MenuItem,
+    value: any
+  ) {
+    setMenuItems((current) =>
+      current.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              [field]: value,
+            }
+          : item
+      )
+    );
+  }
+
+  async function saveMenuItem(item: MenuItem) {
+    setBusy(true);
+    setMessage("Gericht wird gespeichert ...");
+
+    const { error } = await supabase
+      .from("menu_items")
+      .update({
+        category: item.category,
+        name: item.name,
+        description: item.description || "",
+        price:
+          item.price === null || Number.isNaN(item.price)
+            ? null
+            : item.price,
+        sort_order: item.sort_order || 0,
+      })
+      .eq("id", item.id);
+
+    if (error) {
+      console.error(error);
+      setMessage("Fehler: " + error.message);
+    } else {
+      setMessage(`„${item.name}“ wurde gespeichert.`);
+    }
+
+    setBusy(false);
+  }
+
+  async function addMenuItem() {
+    setBusy(true);
+
+    const category =
+      selectedCategory === "Alle"
+        ? "Specials"
+        : selectedCategory;
+
+    const sameCategory = menuItems.filter(
+      (item) => item.category === category
+    );
+
+    const nextSort =
+      sameCategory.length > 0
+        ? Math.max(
+            ...sameCategory.map(
+              (item) => item.sort_order || 0
+            )
+          ) + 1
+        : 1;
+
+    const { data, error } = await supabase
+      .from("menu_items")
+      .insert({
+        category,
+        name: "Neues Gericht",
+        description: "",
+        price: 0,
+        sort_order: nextSort,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      setMessage("Gericht konnte nicht erstellt werden: " + error.message);
+    } else {
+      setMenuItems((current) => [
+        ...current,
+        data as MenuItem,
+      ]);
+
+      setSelectedCategory(category);
+      setMessage("Neues Gericht wurde erstellt.");
+    }
+
+    setBusy(false);
+  }
+
+  async function deleteMenuItem(item: MenuItem) {
+    const confirmed = window.confirm(
+      `Möchtest du „${item.name}“ wirklich löschen?`
+    );
+
+    if (!confirmed) return;
+
+    setBusy(true);
+
+    const { error } = await supabase
+      .from("menu_items")
+      .delete()
+      .eq("id", item.id);
+
+    if (error) {
+      setMessage("Löschen fehlgeschlagen: " + error.message);
+    } else {
+      setMenuItems((current) =>
+        current.filter((menuItem) => menuItem.id !== item.id)
+      );
+
+      setMessage("Gericht wurde gelöscht.");
+    }
+
+    setBusy(false);
+  }
+
+  // --------------------------------------------------
+  // ANGEBOTE
+  // --------------------------------------------------
+
+  async function loadOffers() {
+    const { data, error } = await supabase
+      .from("offers")
+      .select("*")
+      .order("sort_order", { ascending: true });
+
+    if (error) {
+      console.error(error);
+      setMessage("Angebote konnten nicht geladen werden.");
+      return;
+    }
+
+    setOffers((data || []) as Offer[]);
+  }
+
+  function updateOffer(
+    slug: string,
+    field: keyof Offer,
+    value: any
+  ) {
+    setOffers((current) =>
+      current.map((offer) =>
+        offer.slug === slug
+          ? {
+              ...offer,
+              [field]: value,
+            }
+          : offer
+      )
+    );
+  }
+
+  function updateOfferContent(
+    slug: string,
+    newContent: any
+  ) {
+    setOffers((current) =>
+      current.map((offer) =>
+        offer.slug === slug
+          ? {
+              ...offer,
+              content: newContent,
+            }
+          : offer
+      )
+    );
+  }
+
+  async function saveOffer(offer: Offer) {
+    setBusy(true);
+    setMessage("Angebot wird gespeichert ...");
+
+    const { error } = await supabase
+      .from("offers")
+      .update({
+        title: offer.title,
+        subtitle: offer.subtitle || "",
+        description: offer.description || "",
+        price:
+          offer.price === null || Number.isNaN(offer.price)
+            ? null
+            : offer.price,
+        active: offer.active,
+        sort_order: offer.sort_order || 0,
+        content: offer.content,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", offer.id);
+
+    if (error) {
+      setMessage("Fehler beim Speichern: " + error.message);
+    } else {
+      setMessage(`„${offer.title}“ wurde gespeichert.`);
+    }
+
+    setBusy(false);
+  }
+
+  // --------------------------------------------------
+  // DAMENABEND
+  // --------------------------------------------------
+
+  function updateLadiesMain(
+    index: number,
+    field: keyof MainDish,
+    value: string
+  ) {
+    const offer = offers.find(
+      (item) => item.slug === "damenabend"
+    );
+
+    if (!offer) return;
+
+    const mains: MainDish[] = [
+      ...(offer.content?.mains || []),
+    ];
+
+    mains[index] = {
+      ...mains[index],
+      [field]: value,
+    };
+
+    updateOfferContent("damenabend", {
+      ...offer.content,
+      mains,
+    });
+  }
+
+  function addLadiesMain() {
+    const offer = offers.find(
+      (item) => item.slug === "damenabend"
+    );
+
+    if (!offer) return;
+
+    const mains: MainDish[] = [
+      ...(offer.content?.mains || []),
+      {
+        name: "Neues Hauptgericht",
+        description: "",
+      },
+    ];
+
+    updateOfferContent("damenabend", {
+      ...offer.content,
+      mains,
+    });
+  }
+
+  function deleteLadiesMain(index: number) {
+    const offer = offers.find(
+      (item) => item.slug === "damenabend"
+    );
+
+    if (!offer) return;
+
+    const mains: MainDish[] = [
+      ...(offer.content?.mains || []),
+    ];
+
+    mains.splice(index, 1);
+
+    updateOfferContent("damenabend", {
+      ...offer.content,
+      mains,
+    });
+  }
+
+  // --------------------------------------------------
+  // SAISONANGEBOT
+  // --------------------------------------------------
+
+  function updateSeasonalDish(
+    index: number,
+    field: keyof SeasonalDish,
+    value: any
+  ) {
+    const offer = offers.find(
+      (item) => item.slug === "pfifferlinge"
+    );
+
+    if (!offer) return;
+
+    const dishes: SeasonalDish[] = [
+      ...(offer.content?.dishes || []),
+    ];
+
+    dishes[index] = {
+      ...dishes[index],
+      [field]: value,
+    };
+
+    updateOfferContent("pfifferlinge", {
+      ...offer.content,
+      dishes,
+    });
+  }
+
+  function addSeasonalDish() {
+    const offer = offers.find(
+      (item) => item.slug === "pfifferlinge"
+    );
+
+    if (!offer) return;
+
+    const dishes: SeasonalDish[] = [
+      ...(offer.content?.dishes || []),
+      {
+        name: "Neues Saison-Gericht",
+        description: "",
+        price: null,
+      },
+    ];
+
+    updateOfferContent("pfifferlinge", {
+      ...offer.content,
+      dishes,
+    });
+  }
+
+  function deleteSeasonalDish(index: number) {
+    const offer = offers.find(
+      (item) => item.slug === "pfifferlinge"
+    );
+
+    if (!offer) return;
+
+    const dishes: SeasonalDish[] = [
+      ...(offer.content?.dishes || []),
+    ];
+
+    dishes.splice(index, 1);
+
+    updateOfferContent("pfifferlinge", {
+      ...offer.content,
+      dishes,
+    });
+  }
+
+  // --------------------------------------------------
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#07111c] text-white">
-        <p className="text-[#d4a437]">Wird geladen...</p>
+      <main className="min-h-screen bg-[#0d1823] flex items-center justify-center text-white">
+        <p>Adminbereich wird geladen ...</p>
       </main>
     );
   }
 
   if (!loggedIn) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#07111c] px-6 text-white">
-        <div className="w-full max-w-md rounded-3xl border border-[#d4a437]/30 bg-[#0c1722] p-8 shadow-2xl">
-          <p className="text-center text-xs uppercase tracking-[0.35em] text-[#d4a437]">
+      <main className="min-h-screen bg-[#0d1823] flex items-center justify-center px-4">
+        <form
+          onSubmit={login}
+          className="w-full max-w-md bg-white rounded-2xl p-8 shadow-2xl"
+        >
+          <p className="text-[#b58a3a] uppercase tracking-[0.25em] text-sm font-semibold mb-2">
             Restaurant Adria
           </p>
 
-          <h1 className="mt-4 text-center font-serif text-4xl">
+          <h1 className="text-3xl font-bold text-[#111827] mb-2">
             Admin Login
           </h1>
 
-          <p className="mt-3 text-center text-sm text-white/45">
-            Melde dich an, um die Website zu bearbeiten.
+          <p className="text-gray-500 mb-7">
+            Website, Speisekarte und Angebote verwalten.
           </p>
 
-          <form onSubmit={handleLogin} className="mt-8">
-            <label className="text-sm text-white/60">
+          <label className="block mb-4">
+            <span className="block font-semibold mb-2">
               E-Mail
-            </label>
+            </span>
 
             <input
               type="email"
-              required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-2 w-full rounded-xl border border-white/15 bg-[#07111c] px-4 py-3 outline-none focus:border-[#d4a437]"
-              placeholder="E-Mail-Adresse"
+              onChange={(event) =>
+                setEmail(event.target.value)
+              }
+              required
+              className="w-full border border-gray-300 rounded-xl px-4 py-3"
             />
+          </label>
 
-            <label className="mt-5 block text-sm text-white/60">
+          <label className="block mb-5">
+            <span className="block font-semibold mb-2">
               Passwort
-            </label>
+            </span>
 
             <input
               type="password"
-              required
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-2 w-full rounded-xl border border-white/15 bg-[#07111c] px-4 py-3 outline-none focus:border-[#d4a437]"
-              placeholder="Passwort"
+              onChange={(event) =>
+                setPassword(event.target.value)
+              }
+              required
+              className="w-full border border-gray-300 rounded-xl px-4 py-3"
             />
+          </label>
 
-            {error && (
-              <p className="mt-4 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-300">
-                {error}
-              </p>
-            )}
+          <button
+            type="submit"
+            disabled={busy}
+            className="w-full rounded-xl bg-[#b58a3a] text-white font-bold py-3"
+          >
+            {busy ? "Bitte warten ..." : "Anmelden"}
+          </button>
 
-            <button
-              type="submit"
-              className="mt-6 w-full rounded-xl bg-[#d4a437] px-5 py-3 font-semibold text-black transition hover:bg-[#e5b84d]"
-            >
-              Anmelden
-            </button>
-          </form>
-        </div>
+          {message && (
+            <p className="mt-4 text-sm text-gray-700">
+              {message}
+            </p>
+          )}
+
+          <a
+            href="/"
+            className="block text-center mt-6 text-gray-500"
+          >
+            ← Zur Website
+          </a>
+        </form>
       </main>
     );
   }
 
+  const visibleMenu =
+    selectedCategory === "Alle"
+      ? menuItems
+      : menuItems.filter(
+          (item) =>
+            item.category === selectedCategory
+        );
+
+  const ladiesOffer = offers.find(
+    (item) => item.slug === "damenabend"
+  );
+
+  const seasonalOffer = offers.find(
+    (item) => item.slug === "pfifferlinge"
+  );
+
   return (
-    <main className="min-h-screen bg-[#07111c] px-5 py-10 text-white md:px-8">
-      <div className="mx-auto max-w-6xl">
-
-        {/* KOPF */}
-
-        <header className="flex flex-col gap-5 border-b border-[#d4a437]/25 pb-8 md:flex-row md:items-center md:justify-between">
+    <main className="min-h-screen bg-[#f5f2ec] text-[#17202a]">
+      <header className="bg-[#0d1823] text-white px-5 py-5">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.35em] text-[#d4a437]">
+            <p className="text-[#d2aa5d] text-sm uppercase tracking-[0.2em]">
               Restaurant Adria
             </p>
 
-            <h1 className="mt-2 font-serif text-4xl">
-              Admin-Bereich
+            <h1 className="text-2xl font-bold">
+              Website Verwaltung
             </h1>
-
-            <p className="mt-2 text-sm text-white/40">
-              Website verwalten
-            </p>
           </div>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="flex gap-3">
             <a
               href="/"
               target="_blank"
-              rel="noreferrer"
-              className="rounded-xl border border-[#d4a437] px-5 py-3 text-sm text-[#d4a437]"
+              className="border border-white/30 rounded-xl px-4 py-2"
             >
               Website ansehen
             </a>
 
             <button
-              type="button"
-              onClick={handleLogout}
-              className="rounded-xl border border-white/20 px-5 py-3 text-sm text-white/60"
+              onClick={logout}
+              className="bg-[#b58a3a] rounded-xl px-4 py-2 font-semibold"
             >
               Abmelden
             </button>
           </div>
-        </header>
+        </div>
+      </header>
 
-        {/* MELDUNGEN */}
-
+      <div className="max-w-7xl mx-auto p-4 md:p-8">
         {message && (
-          <div className="mt-6 rounded-xl border border-green-500/30 bg-green-500/10 p-4 text-sm text-green-300">
-            ✓ {message}
-          </div>
-        )}
-
-        {error && (
-          <div className="mt-6 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
-            {error}
+          <div className="mb-6 bg-white border border-[#d9c79e] rounded-xl px-5 py-4 shadow-sm">
+            {message}
           </div>
         )}
 
         {/* BILDER */}
 
-        <section className="mt-10">
-          <p className="text-xs uppercase tracking-[0.3em] text-[#d4a437]">
-            Bilder
-          </p>
+        <section className="bg-white rounded-2xl p-5 md:p-7 shadow-sm mb-8">
+          <div className="mb-6">
+            <p className="text-[#b58a3a] uppercase tracking-widest text-sm font-semibold">
+              Website
+            </p>
 
-          <h2 className="mt-2 font-serif text-3xl">
-            Website-Bilder verwalten
-          </h2>
+            <h2 className="text-2xl font-bold">
+              Bilder bearbeiten
+            </h2>
 
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-white/50">
-            Hier kannst du das Hintergrundbild und die Restaurantbilder
-            austauschen. Nach dem Hochladen wird das neue Bild gespeichert.
-          </p>
+            <p className="text-gray-500 mt-1">
+              Hier kannst du die Bilder auf der Website austauschen.
+            </p>
+          </div>
 
-          <div className="mt-8 grid gap-6 md:grid-cols-2">
-
+          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
             {imageSlots.map((slot) => (
               <div
                 key={slot.key}
-                className="overflow-hidden rounded-3xl border border-[#d4a437]/20 bg-[#0c1722]"
+                className="border border-gray-200 rounded-2xl p-4"
               >
-                <div className="flex h-64 items-center justify-center overflow-hidden bg-black/30">
+                <h3 className="font-bold mb-3">
+                  {slot.label}
+                </h3>
 
-                  {images[slot.key] ? (
+                <div className="h-44 rounded-xl bg-gray-100 overflow-hidden mb-4">
+                  {settings[slot.key] ? (
                     <img
-                      src={images[slot.key]}
-                      alt={slot.title}
-                      className="h-full w-full object-cover"
+                      src={settings[slot.key]}
+                      alt={slot.label}
+                      className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="px-6 text-center">
-                      <p className="text-sm text-white/30">
-                        Noch kein neues Bild hochgeladen
-                      </p>
-
-                      <p className="mt-2 text-xs text-white/20">
-                        Das bisherige Bild der Website bleibt erhalten.
-                      </p>
+                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                      Noch kein Bild
                     </div>
                   )}
-
                 </div>
 
-                <div className="p-6">
-                  <h3 className="font-serif text-2xl text-[#d4a437]">
-                    {slot.title}
-                  </h3>
+                <label className="block cursor-pointer text-center rounded-xl bg-[#0d1823] text-white px-4 py-3 font-semibold">
+                  Neues Bild auswählen
 
-                  <p className="mt-2 text-sm text-white/50">
-                    {slot.description}
-                  </p>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={busy}
+                    onChange={(event) =>
+                      uploadImage(
+                        slot.key,
+                        event.target.files?.[0]
+                      )
+                    }
+                  />
+                </label>
+              </div>
+            ))}
+          </div>
+        </section>
 
-                  <label
-                    className={`mt-5 block rounded-xl px-5 py-3 text-center text-sm font-semibold ${
-                      uploading === slot.key
-                        ? "cursor-wait bg-[#d4a437]/50 text-black/60"
-                        : "cursor-pointer bg-[#d4a437] text-black hover:bg-[#e5b84d]"
-                    }`}
-                  >
-                    {uploading === slot.key
-                      ? "Bild wird hochgeladen..."
-                      : "Bild auswählen und hochladen"}
+        {/* SPEISEKARTE */}
+
+        <section className="bg-white rounded-2xl p-5 md:p-7 shadow-sm mb-8">
+          <div className="flex flex-wrap justify-between gap-4 items-end mb-6">
+            <div>
+              <p className="text-[#b58a3a] uppercase tracking-widest text-sm font-semibold">
+                Restaurant
+              </p>
+
+              <h2 className="text-2xl font-bold">
+                Speisekarte
+              </h2>
+
+              <p className="text-gray-500 mt-1">
+                Namen, Beschreibungen und Preise direkt ändern.
+              </p>
+            </div>
+
+            <button
+              onClick={addMenuItem}
+              disabled={busy}
+              className="bg-[#b58a3a] text-white rounded-xl px-5 py-3 font-bold"
+            >
+              + Gericht hinzufügen
+            </button>
+          </div>
+
+          <div className="flex gap-2 overflow-x-auto pb-4 mb-4">
+            <button
+              onClick={() =>
+                setSelectedCategory("Alle")
+              }
+              className={`whitespace-nowrap rounded-full px-4 py-2 ${
+                selectedCategory === "Alle"
+                  ? "bg-[#0d1823] text-white"
+                  : "bg-gray-100"
+              }`}
+            >
+              Alle
+            </button>
+
+            {categories.map((category) => (
+              <button
+                key={category}
+                onClick={() =>
+                  setSelectedCategory(category)
+                }
+                className={`whitespace-nowrap rounded-full px-4 py-2 ${
+                  selectedCategory === category
+                    ? "bg-[#0d1823] text-white"
+                    : "bg-gray-100"
+                }`}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+
+          <div className="space-y-5">
+            {visibleMenu.map((item) => (
+              <div
+                key={item.id}
+                className="border border-gray-200 rounded-2xl p-5"
+              >
+                <div className="grid md:grid-cols-2 gap-4">
+                  <label>
+                    <span className="block text-sm font-bold mb-1">
+                      Gericht
+                    </span>
 
                     <input
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp"
-                      disabled={uploading !== null}
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
+                      value={item.name}
+                      onChange={(event) =>
+                        changeMenuItem(
+                          item.id,
+                          "name",
+                          event.target.value
+                        )
+                      }
+                      className="w-full border rounded-xl px-4 py-3"
+                    />
+                  </label>
 
-                        if (file) {
-                          uploadImage(slot.key, file);
-                        }
+                  <label>
+                    <span className="block text-sm font-bold mb-1">
+                      Kategorie
+                    </span>
 
-                        e.target.value = "";
-                      }}
+                    <select
+                      value={item.category}
+                      onChange={(event) =>
+                        changeMenuItem(
+                          item.id,
+                          "category",
+                          event.target.value
+                        )
+                      }
+                      className="w-full border rounded-xl px-4 py-3 bg-white"
+                    >
+                      {categories.map((category) => (
+                        <option
+                          key={category}
+                          value={category}
+                        >
+                          {category}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="md:col-span-2">
+                    <span className="block text-sm font-bold mb-1">
+                      Beschreibung
+                    </span>
+
+                    <textarea
+                      value={item.description || ""}
+                      onChange={(event) =>
+                        changeMenuItem(
+                          item.id,
+                          "description",
+                          event.target.value
+                        )
+                      }
+                      rows={2}
+                      className="w-full border rounded-xl px-4 py-3"
+                    />
+                  </label>
+
+                  <label>
+                    <span className="block text-sm font-bold mb-1">
+                      Preis €
+                    </span>
+
+                    <input
+                      type="number"
+                      step="0.10"
+                      value={item.price ?? ""}
+                      onChange={(event) =>
+                        changeMenuItem(
+                          item.id,
+                          "price",
+                          event.target.value === ""
+                            ? null
+                            : Number(
+                                event.target.value
+                              )
+                        )
+                      }
+                      className="w-full border rounded-xl px-4 py-3"
+                    />
+                  </label>
+
+                  <label>
+                    <span className="block text-sm font-bold mb-1">
+                      Reihenfolge
+                    </span>
+
+                    <input
+                      type="number"
+                      value={item.sort_order ?? 0}
+                      onChange={(event) =>
+                        changeMenuItem(
+                          item.id,
+                          "sort_order",
+                          Number(event.target.value)
+                        )
+                      }
+                      className="w-full border rounded-xl px-4 py-3"
                     />
                   </label>
                 </div>
+
+                <div className="flex flex-wrap gap-3 mt-4">
+                  <button
+                    onClick={() =>
+                      saveMenuItem(item)
+                    }
+                    disabled={busy}
+                    className="bg-[#0d1823] text-white rounded-xl px-5 py-2.5 font-bold"
+                  >
+                    Speichern
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      deleteMenuItem(item)
+                    }
+                    disabled={busy}
+                    className="border border-red-300 text-red-600 rounded-xl px-5 py-2.5 font-semibold"
+                  >
+                    Löschen
+                  </button>
+                </div>
               </div>
             ))}
-
           </div>
         </section>
 
-        {/* WEITERE ADMIN BEREICHE */}
+        {/* DAMENABEND */}
 
-        <section className="mt-14">
-          <p className="text-xs uppercase tracking-[0.3em] text-[#d4a437]">
-            Weitere Einstellungen
-          </p>
+        {ladiesOffer && (
+          <section className="bg-white rounded-2xl p-5 md:p-7 shadow-sm mb-8">
+            <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
+              <div>
+                <p className="text-[#b58a3a] uppercase tracking-widest text-sm font-semibold">
+                  Angebot
+                </p>
 
-          <h2 className="mt-2 font-serif text-3xl">
-            Restaurant verwalten
-          </h2>
+                <h2 className="text-2xl font-bold">
+                  Damenabend
+                </h2>
+              </div>
 
-          <div className="mt-7 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            <AdminCard
-              title="Speisekarte"
-              description="Gerichte, Preise und Beschreibungen bearbeiten"
-            />
+              <label className="flex items-center gap-3 font-bold">
+                <input
+                  type="checkbox"
+                  checked={ladiesOffer.active}
+                  onChange={(event) =>
+                    updateOffer(
+                      "damenabend",
+                      "active",
+                      event.target.checked
+                    )
+                  }
+                  className="w-5 h-5"
+                />
 
-            <AdminCard
-              title="Saisonangebote"
-              description="Aktuelle saisonale Angebote bearbeiten"
-            />
+                Auf Website anzeigen
+              </label>
+            </div>
 
-            <AdminCard
-              title="Damenabend"
-              description="Preis und Gerichte des Damenabends bearbeiten"
-            />
+            <div className="grid md:grid-cols-2 gap-4">
+              <label>
+                <span className="block font-bold mb-1">
+                  Titel
+                </span>
 
-            <AdminCard
-              title="Öffnungszeiten"
-              description="Öffnungszeiten und Ruhetag ändern"
-            />
+                <input
+                  value={ladiesOffer.title}
+                  onChange={(event) =>
+                    updateOffer(
+                      "damenabend",
+                      "title",
+                      event.target.value
+                    )
+                  }
+                  className="w-full border rounded-xl px-4 py-3"
+                />
+              </label>
 
-            <AdminCard
-              title="Restaurantdaten"
-              description="Telefonnummer, Adresse und weitere Daten ändern"
-            />
-          </div>
-        </section>
+              <label>
+                <span className="block font-bold mb-1">
+                  Untertitel
+                </span>
 
+                <input
+                  value={ladiesOffer.subtitle || ""}
+                  onChange={(event) =>
+                    updateOffer(
+                      "damenabend",
+                      "subtitle",
+                      event.target.value
+                    )
+                  }
+                  className="w-full border rounded-xl px-4 py-3"
+                />
+              </label>
+
+              <label className="md:col-span-2">
+                <span className="block font-bold mb-1">
+                  Text
+                </span>
+
+                <input
+                  value={
+                    ladiesOffer.description || ""
+                  }
+                  onChange={(event) =>
+                    updateOffer(
+                      "damenabend",
+                      "description",
+                      event.target.value
+                    )
+                  }
+                  className="w-full border rounded-xl px-4 py-3"
+                />
+              </label>
+
+              <label>
+                <span className="block font-bold mb-1">
+                  Preis pro Person €
+                </span>
+
+                <input
+                  type="number"
+                  step="0.10"
+                  value={ladiesOffer.price ?? ""}
+                  onChange={(event) =>
+                    updateOffer(
+                      "damenabend",
+                      "price",
+                      event.target.value === ""
+                        ? null
+                        : Number(
+                            event.target.value
+                          )
+                    )
+                  }
+                  className="w-full border rounded-xl px-4 py-3"
+                />
+              </label>
+
+              <label>
+                <span className="block font-bold mb-1">
+                  Aperitif
+                </span>
+
+                <input
+                  value={
+                    ladiesOffer.content?.aperitif ||
+                    ""
+                  }
+                  onChange={(event) =>
+                    updateOfferContent(
+                      "damenabend",
+                      {
+                        ...ladiesOffer.content,
+                        aperitif:
+                          event.target.value,
+                      }
+                    )
+                  }
+                  className="w-full border rounded-xl px-4 py-3"
+                />
+              </label>
+
+              <label className="md:col-span-2">
+                <span className="block font-bold mb-1">
+                  Salat
+                </span>
+
+                <input
+                  value={
+                    ladiesOffer.content?.salad || ""
+                  }
+                  onChange={(event) =>
+                    updateOfferContent(
+                      "damenabend",
+                      {
+                        ...ladiesOffer.content,
+                        salad:
+                          event.target.value,
+                      }
+                    )
+                  }
+                  className="w-full border rounded-xl px-4 py-3"
+                />
+              </label>
+            </div>
+
+            <div className="mt-7">
+              <div className="flex justify-between items-center gap-3 mb-4">
+                <h3 className="text-xl font-bold">
+                  Hauptgerichte
+                </h3>
+
+                <button
+                  onClick={addLadiesMain}
+                  className="border border-[#b58a3a] text-[#8b6729] rounded-xl px-4 py-2 font-bold"
+                >
+                  + Hauptgericht
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {(
+                  ladiesOffer.content?.mains ||
+                  []
+                ).map(
+                  (
+                    main: MainDish,
+                    index: number
+                  ) => (
+                    <div
+                      key={index}
+                      className="border rounded-xl p-4"
+                    >
+                      <input
+                        value={main.name || ""}
+                        onChange={(event) =>
+                          updateLadiesMain(
+                            index,
+                            "name",
+                            event.target.value
+                          )
+                        }
+                        placeholder="Gericht"
+                        className="w-full border rounded-xl px-4 py-3 mb-3 font-semibold"
+                      />
+
+                      <textarea
+                        value={
+                          main.description || ""
+                        }
+                        onChange={(event) =>
+                          updateLadiesMain(
+                            index,
+                            "description",
+                            event.target.value
+                          )
+                        }
+                        placeholder="Beschreibung"
+                        rows={2}
+                        className="w-full border rounded-xl px-4 py-3"
+                      />
+
+                      <button
+                        onClick={() =>
+                          deleteLadiesMain(
+                            index
+                          )
+                        }
+                        className="mt-3 text-red-600 font-semibold"
+                      >
+                        Gericht entfernen
+                      </button>
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
+
+            <button
+              onClick={() =>
+                saveOffer(ladiesOffer)
+              }
+              disabled={busy}
+              className="mt-6 bg-[#b58a3a] text-white rounded-xl px-6 py-3 font-bold"
+            >
+              Damenabend speichern
+            </button>
+          </section>
+        )}
+
+        {/* SAISONANGEBOT */}
+
+        {seasonalOffer && (
+          <section className="bg-white rounded-2xl p-5 md:p-7 shadow-sm mb-8">
+            <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
+              <div>
+                <p className="text-[#b58a3a] uppercase tracking-widest text-sm font-semibold">
+                  Angebot
+                </p>
+
+                <h2 className="text-2xl font-bold">
+                  Saisonangebot
+                </h2>
+              </div>
+
+              <label className="flex items-center gap-3 font-bold">
+                <input
+                  type="checkbox"
+                  checked={seasonalOffer.active}
+                  onChange={(event) =>
+                    updateOffer(
+                      "pfifferlinge",
+                      "active",
+                      event.target.checked
+                    )
+                  }
+                  className="w-5 h-5"
+                />
+
+                Auf Website anzeigen
+              </label>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <label>
+                <span className="block font-bold mb-1">
+                  Titel
+                </span>
+
+                <input
+                  value={seasonalOffer.title}
+                  onChange={(event) =>
+                    updateOffer(
+                      "pfifferlinge",
+                      "title",
+                      event.target.value
+                    )
+                  }
+                  className="w-full border rounded-xl px-4 py-3"
+                />
+              </label>
+
+              <label>
+                <span className="block font-bold mb-1">
+                  Untertitel
+                </span>
+
+                <input
+                  value={
+                    seasonalOffer.subtitle || ""
+                  }
+                  onChange={(event) =>
+                    updateOffer(
+                      "pfifferlinge",
+                      "subtitle",
+                      event.target.value
+                    )
+                  }
+                  className="w-full border rounded-xl px-4 py-3"
+                />
+              </label>
+
+              <label className="md:col-span-2">
+                <span className="block font-bold mb-1">
+                  Beschreibung
+                </span>
+
+                <input
+                  value={
+                    seasonalOffer.description ||
+                    ""
+                  }
+                  onChange={(event) =>
+                    updateOffer(
+                      "pfifferlinge",
+                      "description",
+                      event.target.value
+                    )
+                  }
+                  className="w-full border rounded-xl px-4 py-3"
+                />
+              </label>
+
+              <label className="md:col-span-2">
+                <span className="block font-bold mb-1">
+                  Hinweis
+                </span>
+
+                <input
+                  value={
+                    seasonalOffer.content?.note ||
+                    ""
+                  }
+                  onChange={(event) =>
+                    updateOfferContent(
+                      "pfifferlinge",
+                      {
+                        ...seasonalOffer.content,
+                        note: event.target.value,
+                      }
+                    )
+                  }
+                  className="w-full border rounded-xl px-4 py-3"
+                />
+              </label>
+            </div>
+
+            <div className="mt-7">
+              <div className="flex justify-between items-center gap-3 mb-4">
+                <h3 className="text-xl font-bold">
+                  Saison-Gerichte
+                </h3>
+
+                <button
+                  onClick={addSeasonalDish}
+                  className="border border-[#b58a3a] text-[#8b6729] rounded-xl px-4 py-2 font-bold"
+                >
+                  + Gericht
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {(
+                  seasonalOffer.content?.dishes ||
+                  []
+                ).map(
+                  (
+                    dish: SeasonalDish,
+                    index: number
+                  ) => (
+                    <div
+                      key={index}
+                      className="border rounded-xl p-4"
+                    >
+                      <div className="grid md:grid-cols-[1fr_160px] gap-3">
+                        <input
+                          value={dish.name || ""}
+                          onChange={(event) =>
+                            updateSeasonalDish(
+                              index,
+                              "name",
+                              event.target.value
+                            )
+                          }
+                          placeholder="Gericht"
+                          className="w-full border rounded-xl px-4 py-3 font-semibold"
+                        />
+
+                        <input
+                          type="number"
+                          step="0.10"
+                          value={
+                            dish.price ?? ""
+                          }
+                          onChange={(event) =>
+                            updateSeasonalDish(
+                              index,
+                              "price",
+                              event.target.value ===
+                                ""
+                                ? null
+                                : Number(
+                                    event.target
+                                      .value
+                                  )
+                            )
+                          }
+                          placeholder="Preis €"
+                          className="w-full border rounded-xl px-4 py-3"
+                        />
+                      </div>
+
+                      <textarea
+                        value={
+                          dish.description || ""
+                        }
+                        onChange={(event) =>
+                          updateSeasonalDish(
+                            index,
+                            "description",
+                            event.target.value
+                          )
+                        }
+                        placeholder="Beschreibung"
+                        rows={2}
+                        className="w-full border rounded-xl px-4 py-3 mt-3"
+                      />
+
+                      <button
+                        onClick={() =>
+                          deleteSeasonalDish(
+                            index
+                          )
+                        }
+                        className="mt-3 text-red-600 font-semibold"
+                      >
+                        Gericht entfernen
+                      </button>
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
+
+            <button
+              onClick={() =>
+                saveOffer(seasonalOffer)
+              }
+              disabled={busy}
+              className="mt-6 bg-[#b58a3a] text-white rounded-xl px-6 py-3 font-bold"
+            >
+              Saisonangebot speichern
+            </button>
+          </section>
+        )}
       </div>
     </main>
-  );
-}
-
-function AdminCard({
-  title,
-  description,
-}: {
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="rounded-3xl border border-[#d4a437]/20 bg-[#0c1722] p-6">
-      <h3 className="font-serif text-2xl text-[#d4a437]">
-        {title}
-      </h3>
-
-      <p className="mt-3 text-sm leading-6 text-white/50">
-        {description}
-      </p>
-
-      <p className="mt-6 text-xs uppercase tracking-wider text-white/25">
-        Als Nächstes
-      </p>
-    </div>
   );
 }
