@@ -1,4 +1,6 @@
-import Image from "next/image";
+import { createClient } from "@supabase/supabase-js";
+
+export const dynamic = "force-dynamic";
 
 const menuSections = [
   {
@@ -6,26 +8,26 @@ const menuSections = [
     items: [
       {
         name: "Hausgemachtes Zaziki",
-        description: "Mit Knoblauchbrot",
         price: "5,50 €",
+        description: "Mit Knoblauchbrot",
       },
       {
         name: "Mozzarella im Serranoschinken",
+        price: "12,90 €",
         description:
           "Gegrillter Mozzarella im Serranomantel mit Röstbrot und Salatbeilage",
-        price: "12,90 €",
       },
       {
         name: "Gebackene Mozzarella-Bällchen",
+        price: "11,90 €",
         description:
           "Knusprig panierte Mozzarella-Bällchen mit Knoblauchbrot und Salatbeilage",
-        price: "11,90 €",
       },
       {
         name: "Panierter Hirtenkäse",
+        price: "9,90 €",
         description:
           "Knusprig panierter Hirtenkäse mit Röstbrot und Salatbeilage",
-        price: "9,90 €",
       },
     ],
   },
@@ -34,32 +36,50 @@ const menuSections = [
     items: [
       {
         name: "Blattsalat mit Knoblauch-Chili-Garnelen",
+        price: "26,90 €",
         description:
           "Tomaten, Gurken, rote Zwiebeln, Paprika, Fregola Sarda, Kichererbsen, Parmesan und hausgemachte Balsamico-Vinaigrette",
-        price: "26,90 €",
       },
       {
         name: "Blattsalat mit gegrillten Pilzen",
+        price: "18,90 €",
         description:
           "Halloumi-Grillkäse, Tomaten, Gurken, rote Zwiebeln, Paprika, Fregola, Kichererbsen und hausgemachte Balsamico-Vinaigrette",
-        price: "18,90 €",
+      },
+      {
+        name: "Blattsalat mit gegrilltem Rumpsteak",
+        price: "27,50 €",
+        description:
+          "Tomaten, Gurken, rote Zwiebeln, Paprika, Fregola Sarda, Kichererbsen, Parmesan und hausgemachte Balsamico-Vinaigrette",
       },
       {
         name: "Knusprige Riesengarnelen",
+        price: "27,50 €",
         description:
           "Rote Zwiebeln, Paprika, Kirschtomaten, Avocado, Fregola Sarda, Knoblauchsauce, Trüffelcreme und Dip-Pommes",
-        price: "27,50 €",
       },
       {
         name: "Grillgemüse",
-        description: "Dazu Knoblauchbrot",
         price: "16,90 €",
+        description: "Dazu Knoblauchbrot",
+      },
+      {
+        name: "Aubergine und Zucchini überbacken",
+        price: "18,90 €",
+        description:
+          "Gegrillte Aubergine und Zucchini in Tomatensauce, mit Mozzarella und Parmesan überbacken, dazu Knoblauchbrot",
+      },
+      {
+        name: "Pilzschnitzelchen",
+        price: "17,90 €",
+        description:
+          "In Pankomehl panierte Pilze, rote Zwiebeln, Paprika, Knoblauchsauce, Trüffelcreme und Pommes frites",
       },
       {
         name: "Joka-Pfanne",
+        price: "19,90 €",
         description:
           "Geschnetzeltes Schweinefilet mit Tomaten, Paprika, Zwiebeln und Champignons in einer pikanten Sauce, dazu Butterreis",
-        price: "19,90 €",
       },
     ],
   },
@@ -68,38 +88,44 @@ const menuSections = [
     items: [
       {
         name: "Mediterranes Rumpsteak",
+        price: "32,90 €",
         description:
           "Grillgemüse, Fregola Sarda, Rucolasalat, Chiliöl, Parmesan und Knoblauchbrot",
-        price: "32,90 €",
       },
       {
         name: "Schweinefilet",
+        price: "25,90 €",
         description:
           "In pikanter Chili-Tomatensauce, mit Mozzarella und Tomate überbacken, dazu Kroketten",
-        price: "25,90 €",
       },
       {
         name: "Surf ’n’ Turf",
+        price: "32,90 €",
         description:
           "Rumpsteak, knusprige Riesengarnelen, frische Champignons, Rucola, Paprika, Kirschtomaten, Parmesan, Trüffelöl und Dip-Pommes",
-        price: "32,90 €",
       },
       {
         name: "Schweinefilet im Speckmantel mit Scampispieß",
-        description: "Dazu Kroketten",
         price: "27,90 €",
+        description: "Dazu Kroketten",
+      },
+      {
+        name: "Schweinefilet Special",
+        price: "24,50 €",
+        description:
+          "Avocado, Jalapeños, Kirschtomaten, Chiliöl, Paprika, Rucola, Parmesan und Pommes frites",
       },
       {
         name: "Karamellisiertes Lachsfilet",
+        price: "28,90 €",
         description:
           "Grillgemüse, Fregola Sarda, Chiliöl, Parmesan, Rucola und Knoblauchbrot",
-        price: "28,90 €",
       },
       {
         name: "Kabeljau-Piccata",
+        price: "28,90 €",
         description:
           "Kabeljaufilet in Parmesanhülle, rote Zwiebeln, Paprika, Knoblauchsauce, Trüffelcreme und Dip-Pommes",
-        price: "28,90 €",
       },
     ],
   },
@@ -108,50 +134,61 @@ const menuSections = [
     items: [
       {
         name: "Grillteller",
+        price: "21,50 €",
         description:
           "Hacksteak, Schweinelachs, Nackensteak, Ćevapčići und Bauchspeck mit Pommes frites und Djuveč-Reis",
-        price: "21,50 €",
       },
       {
         name: "Steakteller",
+        price: "25,90 €",
         description:
           "Rumpsteak, Schweinefiletmedaillon und Hähnchenbrust mit Dip-Pommes",
-        price: "25,90 €",
       },
       {
         name: "Mix Grill",
+        price: "18,90 €",
         description:
           "Hähnchenbrust, Hacksteak und Nackensteak mit Pommes frites und Djuveč-Reis",
-        price: "18,90 €",
       },
       {
         name: "Schweinefiletröllchen",
+        price: "25,90 €",
         description:
           "Gefüllt mit Kochschinken und Käse, dazu Kroketten",
+      },
+      {
+        name: "Schweinefiletmedaillons am Spieß",
         price: "25,90 €",
+        description:
+          "Mit Paprika, Zwiebeln, Bauchspeck und Djuveč-Reis",
       },
       {
         name: "Argentinisches Rumpsteak",
-        description: "Mit Dip-Pommes",
         price: "28,90 €",
+        description: "Mit Dip-Pommes",
       },
       {
         name: "Cordon Bleu",
+        price: "23,90 €",
         description:
           "Putenbrust mit Kochschinken und Käse gefüllt, dazu Kroketten",
-        price: "23,90 €",
       },
       {
         name: "Hacksteak Montenegro",
-        description:
-          "Mit Hirtenkäse gefüllt, dazu Djuveč-Reis",
         price: "18,90 €",
+        description: "Mit Hirtenkäse gefüllt, dazu Djuveč-Reis",
       },
       {
         name: "Hausplatte für zwei Personen",
-        description:
-          "Rumpsteak, Hacksteak, Hähnchenbrust, Schweinefiletmedaillons und Gemüse mit Sauce Hollandaise, Pommes frites und Djuveč-Reis",
         price: "52,00 €",
+        description:
+          "Rumpsteak, mit Hirtenkäse gefülltes Hacksteak, Hähnchenbrust, Schweinefiletmedaillons und Gemüse mit Sauce Hollandaise, dazu Pommes frites und Djuveč-Reis",
+      },
+      {
+        name: "Grillplatte für zwei Personen",
+        price: "48,00 €",
+        description:
+          "Zwei Hacksteaks, zwei Nackensteaks, Ćevapčići, zwei Stück Bauchspeck und zwei Stück Leber",
       },
     ],
   },
@@ -160,13 +197,13 @@ const menuSections = [
     items: [
       {
         name: "Hähnchenschnitzel",
-        description: "Mit Pommes frites",
         price: "9,90 €",
+        description: "Mit Pommes frites",
       },
       {
         name: "Ćevapčići",
-        description: "Mit Djuveč-Reis",
         price: "9,90 €",
+        description: "Mit Djuveč-Reis",
       },
     ],
   },
@@ -175,54 +212,109 @@ const menuSections = [
     items: [
       {
         name: "Vanilleeis mit heißen Kirschen",
-        description: "Mit Obst der Saison",
         price: "8,90 €",
+        description: "Mit Obst der Saison",
       },
       {
         name: "Vanilleeis mit heißer Schokolade",
-        description: "Mit Obst der Saison",
         price: "8,90 €",
+        description: "Mit Obst der Saison",
       },
     ],
   },
 ];
 
-export default function Home() {
+type SiteSettings = {
+  [key: string]: string;
+};
+
+async function getSiteSettings(): Promise<SiteSettings> {
+  try {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
+    );
+
+    const { data, error } = await supabase
+      .from("site_settings")
+      .select("key,value");
+
+    if (error || !data) {
+      console.error("Fehler beim Laden der Einstellungen:", error);
+      return {};
+    }
+
+    const settings: SiteSettings = {};
+
+    for (const item of data) {
+      settings[item.key] = item.value;
+    }
+
+    return settings;
+  } catch (error) {
+    console.error("Supabase Fehler:", error);
+    return {};
+  }
+}
+
+function RestaurantImage({
+  src,
+  alt,
+  className = "",
+}: {
+  src: string;
+  alt: string;
+  className?: string;
+}) {
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={`h-full w-full object-cover ${className}`}
+    />
+  );
+}
+
+export default async function Home() {
+  const settings = await getSiteSettings();
+
+  const heroImage = settings.hero_image || "/restaurant-3.jpg";
+  const restaurantImage1 =
+    settings.restaurant_image_1 || "/restaurant-1.jpg";
+  const restaurantImage2 =
+    settings.restaurant_image_2 || "/restaurant-2.jpg";
+  const restaurantImage3 =
+    settings.restaurant_image_3 || "/restaurant-3.jpg";
+  const restaurantImage4 =
+    settings.restaurant_image_4 || "/restaurant-4.jpg";
+
   return (
     <main className="bg-[#f6f1e8] text-[#17130f]">
       {/* HEADER */}
-      <header className="fixed left-0 right-0 top-0 z-50 border-b border-[#c89c3c]/20 bg-[#090806]/95 backdrop-blur">
-        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 lg:px-8">
-          <a href="#start" className="leading-none">
-            <div className="font-serif text-3xl tracking-[0.16em] text-white">
-              ADRIA
-            </div>
-            <div className="mt-1 text-[9px] uppercase tracking-[0.32em] text-[#d4a437]">
-              Balkan- & internationale Küche
-            </div>
+      <header className="fixed left-0 right-0 top-0 z-50 border-b border-white/10 bg-[#11100e]/95 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 md:px-8">
+          <a href="#" className="text-xl font-semibold tracking-[0.12em] text-[#d8b66b]">
+            RESTAURANT ADRIA
           </a>
 
-          <nav className="hidden items-center gap-7 text-sm text-white/80 lg:flex">
-            <a className="transition hover:text-[#d4a437]" href="#start">
-              Home
-            </a>
-            <a className="transition hover:text-[#d4a437]" href="#speisekarte">
-              Speisekarte
-            </a>
-            <a className="transition hover:text-[#d4a437]" href="#ueber-uns">
+          <nav className="hidden items-center gap-8 text-sm text-white/80 lg:flex">
+            <a href="#ueber-uns" className="transition hover:text-[#d8b66b]">
               Über uns
             </a>
-            <a className="transition hover:text-[#d4a437]" href="#galerie">
-              Galerie
+            <a href="#angebote" className="transition hover:text-[#d8b66b]">
+              Angebote
             </a>
-            <a className="transition hover:text-[#d4a437]" href="#kontakt">
+            <a href="#speisekarte" className="transition hover:text-[#d8b66b]">
+              Speisekarte
+            </a>
+            <a href="#kontakt" className="transition hover:text-[#d8b66b]">
               Kontakt
             </a>
           </nav>
 
           <a
             href="tel:+49426182301"
-            className="rounded-sm border border-[#d4a437] px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[#e1b650] transition hover:bg-[#d4a437] hover:text-black"
+            className="rounded-full border border-[#d8b66b] px-4 py-2 text-sm font-medium text-[#d8b66b] transition hover:bg-[#d8b66b] hover:text-[#11100e]"
           >
             Tisch reservieren
           </a>
@@ -230,50 +322,44 @@ export default function Home() {
       </header>
 
       {/* HERO */}
-      <section
-        id="start"
-        className="relative flex min-h-[760px] items-center overflow-hidden pt-20"
-      >
-        <Image
-          src="/restaurant-3.jpg"
-          alt="Restaurant Adria in Rotenburg"
-          fill
-          priority
-          className="object-cover"
-        />
+      <section className="relative min-h-[760px] overflow-hidden">
+        <div className="absolute inset-0">
+          <RestaurantImage
+            src={heroImage}
+            alt="Restaurant Adria in Rotenburg"
+          />
+        </div>
 
-        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/75 to-black/20" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
+        <div className="absolute inset-0 bg-black/55" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/40 to-black/20" />
 
-        <div className="relative z-10 mx-auto w-full max-w-7xl px-6 py-24 lg:px-8">
+        <div className="relative mx-auto flex min-h-[760px] max-w-7xl items-center px-5 pt-24 md:px-8">
           <div className="max-w-3xl">
-            <p className="font-serif text-2xl italic text-[#d4a437] md:text-3xl">
-              Herzlich willkommen im
+            <p className="mb-5 text-sm font-medium uppercase tracking-[0.3em] text-[#d8b66b]">
+              Balkan- &amp; internationale Küche
             </p>
 
-            <h1 className="mt-3 font-serif text-6xl leading-[0.95] text-white md:text-8xl">
-              Restaurant
-              <span className="block">Adria</span>
+            <h1 className="max-w-3xl text-5xl font-semibold leading-[1.05] text-white md:text-7xl">
+              Herzlich willkommen im Restaurant Adria
             </h1>
 
-            <div className="my-7 h-px w-16 bg-[#d4a437]" />
-
-            <p className="max-w-xl text-lg leading-8 text-white/85 md:text-xl">
-              Balkan- und internationale Küche mit Herz, Tradition und
-              ausgewählten Zutaten.
+            <p className="mt-7 max-w-2xl text-lg leading-8 text-white/80 md:text-xl">
+              Genießen Sie besondere Momente in gemütlicher Atmosphäre mit
+              Balkan-Klassikern, internationalen Spezialitäten und herzlicher
+              Gastfreundschaft.
             </p>
 
-            <div className="mt-9 flex flex-wrap gap-4">
+            <div className="mt-10 flex flex-wrap gap-4">
               <a
                 href="tel:+49426182301"
-                className="bg-[#d4a437] px-7 py-4 text-sm font-bold uppercase tracking-wider text-black transition hover:bg-[#e5bc59]"
+                className="rounded-full bg-[#d8b66b] px-7 py-3.5 font-semibold text-[#17130f] transition hover:bg-[#e3c47d]"
               >
-                ☎ Tisch reservieren
+                Jetzt reservieren
               </a>
 
               <a
                 href="#speisekarte"
-                className="border border-[#d4a437] px-7 py-4 text-sm font-semibold uppercase tracking-wider text-white transition hover:bg-[#d4a437] hover:text-black"
+                className="rounded-full border border-white/50 px-7 py-3.5 font-semibold text-white transition hover:border-white hover:bg-white/10"
               >
                 Speisekarte ansehen
               </a>
@@ -283,398 +369,348 @@ export default function Home() {
       </section>
 
       {/* ÜBER UNS */}
-      <section id="ueber-uns" className="px-6 py-24 lg:px-8">
+      <section id="ueber-uns" className="px-5 py-24 md:px-8 md:py-32">
         <div className="mx-auto max-w-7xl">
-          <div className="grid gap-12 lg:grid-cols-[0.8fr_2fr] lg:items-center">
+          <div className="grid gap-14 lg:grid-cols-2 lg:items-center">
             <div>
-              <div className="flex items-center gap-4">
-                <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#bd8b27]">
-                  Über uns
-                </span>
-                <span className="h-px w-12 bg-[#bd8b27]" />
-              </div>
-
-              <h2 className="mt-5 font-serif text-4xl leading-tight text-[#0c1b2d] md:text-5xl">
-                Tradition.
-                <br />
-                Genuss.
-                <br />
-                Gastfreundschaft.
-              </h2>
-
-              <p className="mt-7 max-w-md leading-7 text-black/65">
-                Im Restaurant Adria verbinden wir traditionelle Balkan-Küche
-                mit internationalen Spezialitäten. Genießen Sie gutes Essen,
-                ein gemütliches Ambiente und herzliche Gastfreundschaft mitten
-                in Rotenburg.
+              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#a37c2f]">
+                Restaurant Adria
               </p>
 
-              <a
-                href="#kontakt"
-                className="mt-8 inline-block bg-[#0b1725] px-6 py-4 text-xs font-bold uppercase tracking-wider text-white"
-              >
-                Mehr über uns →
-              </a>
+              <h2 className="mt-4 text-4xl font-semibold leading-tight md:text-5xl">
+                Genuss, Gastfreundschaft und Atmosphäre
+              </h2>
+
+              <p className="mt-7 text-lg leading-8 text-black/65">
+                Im Restaurant Adria verbinden wir traditionelle Balkan-Küche
+                mit internationalen Gerichten. Frische Zutaten, herzhafte
+                Grillgerichte und eine angenehme Atmosphäre stehen bei uns im
+                Mittelpunkt.
+              </p>
+
+              <p className="mt-5 text-lg leading-8 text-black/65">
+                Ob ein gemütliches Abendessen, ein Treffen mit Freunden oder
+                ein besonderer Anlass – wir freuen uns darauf, Sie bei uns
+                begrüßen zu dürfen.
+              </p>
             </div>
 
-            <div
-              id="galerie"
-              className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4"
-            >
-              <PhotoCard
-                src="/restaurant-1.jpg"
-                title="Gemütliches Ambiente"
-                text="Authentisches Restaurant mit viel Charakter."
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="h-72 overflow-hidden rounded-[28px]">
+                <RestaurantImage
+                  src={restaurantImage1}
+                  alt="Gastraum Restaurant Adria"
+                />
+              </div>
 
-              <PhotoCard
-                src="/restaurant-2.jpg"
-                title="Erlesene Weine"
-                text="Eine ausgewählte Auswahl an Weinen."
-              />
+              <div className="mt-10 h-72 overflow-hidden rounded-[28px]">
+                <RestaurantImage
+                  src={restaurantImage2}
+                  alt="Restaurant Adria Weinbereich"
+                />
+              </div>
 
-              <PhotoCard
-                src="/restaurant-3.jpg"
-                title="Restaurant Adria"
-                text="Herzlich, warm und einladend."
-              />
+              <div className="-mt-10 h-72 overflow-hidden rounded-[28px]">
+                <RestaurantImage
+                  src={restaurantImage3}
+                  alt="Restaurant Adria Bar"
+                />
+              </div>
 
-              <PhotoCard
-                src="/restaurant-4.jpg"
-                title="Außenbereich"
-                text="Genießen Sie schöne Stunden auf unserer Terrasse."
-              />
+              <div className="h-72 overflow-hidden rounded-[28px]">
+                <RestaurantImage
+                  src={restaurantImage4}
+                  alt="Restaurant Adria Außenbereich"
+                />
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* ANGEBOTE */}
-      <section className="bg-[#0a0d0f] px-6 py-20 text-white lg:px-8">
+      <section id="angebote" className="bg-[#171512] px-5 py-24 text-white md:px-8">
         <div className="mx-auto max-w-7xl">
-          <div className="text-center">
-            <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#d4a437]">
+          <div className="mb-14 max-w-3xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#d8b66b]">
               Aktuelle Angebote
             </p>
-            <h2 className="mt-3 font-serif text-4xl md:text-5xl">
-              Besonders genießen
+
+            <h2 className="mt-4 text-4xl font-semibold md:text-5xl">
+              Besondere Genussmomente
             </h2>
           </div>
 
-          <div className="mt-12 grid gap-6 md:grid-cols-2">
-            <div className="border border-[#d4a437]/30 bg-[#111517] p-8 md:p-10">
-              <p className="text-xs uppercase tracking-[0.25em] text-[#d4a437]">
+          <div className="grid gap-6 lg:grid-cols-2">
+            <article className="rounded-[30px] border border-white/10 bg-white/[0.04] p-8 md:p-10">
+              <p className="text-sm uppercase tracking-[0.25em] text-[#d8b66b]">
                 Saisonangebot
               </p>
-              <h3 className="mt-3 font-serif text-3xl">Pfifferlinge</h3>
 
-              <div className="mt-7 space-y-6">
+              <h3 className="mt-4 text-3xl font-semibold">
+                Pfifferlinge
+              </h3>
+
+              <div className="mt-8 space-y-7">
                 <div>
-                  <p className="font-semibold">
+                  <h4 className="text-xl font-semibold">
                     Schweinefilet mit Pfifferlingen
-                  </p>
-                  <p className="mt-1 text-sm text-white/55">
+                  </h4>
+                  <p className="mt-2 text-white/65">
                     Zartes Schweinefilet mit frischen Pfifferlingen.
                   </p>
                 </div>
 
                 <div>
-                  <p className="font-semibold">
+                  <h4 className="text-xl font-semibold">
                     Argentinisches Rumpsteak mit Pfifferlingen
-                  </p>
-                  <p className="mt-1 text-sm text-white/55">
+                  </h4>
+                  <p className="mt-2 text-white/65">
                     Saftiges argentinisches Rumpsteak mit frischen
                     Pfifferlingen.
                   </p>
                 </div>
               </div>
 
-              <p className="mt-8 text-xs italic text-[#d4a437]">
+              <p className="mt-8 text-sm italic text-white/50">
                 Nur solange Pfifferlinge verfügbar sind.
               </p>
-            </div>
+            </article>
 
-            <div className="border border-[#d4a437]/30 bg-[#111517] p-8 md:p-10">
-              <p className="text-xs uppercase tracking-[0.25em] text-[#d4a437]">
+            <article className="rounded-[30px] border border-[#d8b66b]/30 bg-[#d8b66b]/10 p-8 md:p-10">
+              <p className="text-sm uppercase tracking-[0.25em] text-[#d8b66b]">
                 Jeden Mittwoch
               </p>
 
-              <div className="mt-3 flex items-end justify-between gap-4">
-                <h3 className="font-serif text-3xl">Damenabend</h3>
-                <div className="font-serif text-3xl text-[#d4a437]">
+              <div className="mt-4 flex items-end justify-between gap-5">
+                <h3 className="text-3xl font-semibold">
+                  Damenabend
+                </h3>
+
+                <span className="text-2xl font-semibold text-[#d8b66b]">
                   24,90 €
-                </div>
+                </span>
               </div>
 
-              <p className="mt-3 text-sm text-white/55">
+              <p className="mt-3 text-white/65">
                 Genießen • Anstoßen • Gemeinsam einen schönen Abend verbringen
               </p>
 
-              <div className="mt-7 grid gap-3 text-sm sm:grid-cols-2">
-                <div className="border border-white/10 p-4">
-                  Aperol Spritz
+              <div className="mt-8 space-y-5 text-white/85">
+                <p>
+                  <strong className="text-white">Aperitif:</strong> Aperol
+                  Spritz
+                </p>
+
+                <p>
+                  <strong className="text-white">Salat:</strong> Frischer Salat
+                  vom Buffet
+                </p>
+
+                <div>
+                  <strong className="text-white">Hauptgericht nach Wahl:</strong>
+
+                  <ul className="mt-4 space-y-3 text-white/70">
+                    <li>
+                      Gegrilltes Hähnchenfilet mit frischem Blattsalat
+                    </li>
+                    <li>
+                      Putensteak Hawaii mit Ananas und Käse gratiniert, dazu
+                      Kroketten
+                    </li>
+                    <li>
+                      Pola-Pola mit Ćevapčići, Pljeskavica, Djuveč-Reis und
+                      Pommes frites
+                    </li>
+                    <li>
+                      Grillgemüse mit knusprigem Röstbrot
+                    </li>
+                  </ul>
                 </div>
-                <div className="border border-white/10 p-4">
-                  Salat vom Buffet
-                </div>
-                <div className="border border-white/10 p-4">
-                  Gegrilltes Hähnchenfilet
-                </div>
-                <div className="border border-white/10 p-4">
-                  Putensteak Hawaii
-                </div>
-                <div className="border border-white/10 p-4">Pola-Pola</div>
-                <div className="border border-white/10 p-4">Grillgemüse</div>
               </div>
-            </div>
+            </article>
           </div>
         </div>
       </section>
 
-      {/* MENU */}
-      <section
-        id="speisekarte"
-        className="bg-[#11100e] px-6 py-24 text-white lg:px-8"
-      >
-        <div className="mx-auto max-w-6xl">
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-4">
-              <span className="h-px w-14 bg-[#d4a437]" />
-              <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#d4a437]">
-                Unsere Speisekarte
-              </p>
-              <span className="h-px w-14 bg-[#d4a437]" />
-            </div>
+      {/* SPEISEKARTE */}
+      <section id="speisekarte" className="px-5 py-24 md:px-8 md:py-32">
+        <div className="mx-auto max-w-7xl">
+          <div className="mx-auto mb-16 max-w-3xl text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#a37c2f]">
+              Unsere Küche
+            </p>
 
-            <h2 className="mt-4 font-serif text-4xl md:text-6xl">
-              Kulinarische Highlights
+            <h2 className="mt-4 text-4xl font-semibold md:text-5xl">
+              Speisekarte
             </h2>
 
-            <p className="mx-auto mt-5 max-w-2xl text-white/55">
-              Traditionelle Klassiker, moderne Spezialitäten und ausgewählte
-              Gerichte aus unserer Küche.
+            <p className="mt-5 text-lg leading-8 text-black/60">
+              Balkan-Spezialitäten, Grillgerichte und internationale Klassiker.
             </p>
           </div>
 
-          <div className="mt-16 space-y-16">
+          <div className="space-y-16">
             {menuSections.map((section) => (
-              <div key={section.title}>
+              <section key={section.title}>
                 <div className="mb-8 flex items-center gap-5">
-                  <h3 className="whitespace-nowrap font-serif text-3xl text-[#d4a437]">
+                  <h3 className="whitespace-nowrap text-2xl font-semibold md:text-3xl">
                     {section.title}
                   </h3>
-                  <div className="h-px flex-1 bg-[#d4a437]/25" />
+                  <div className="h-px w-full bg-black/15" />
                 </div>
 
-                <div className="grid gap-x-12 gap-y-8 md:grid-cols-2">
+                <div className="grid gap-x-12 gap-y-8 lg:grid-cols-2">
                   {section.items.map((item) => (
-                    <div
+                    <article
                       key={item.name}
-                      className="border-b border-white/10 pb-6"
+                      className="border-b border-black/10 pb-6"
                     >
                       <div className="flex items-start justify-between gap-5">
-                        <h4 className="font-serif text-xl">{item.name}</h4>
-                        <span className="whitespace-nowrap font-semibold text-[#d4a437]">
+                        <h4 className="text-lg font-semibold">
+                          {item.name}
+                        </h4>
+
+                        <span className="shrink-0 font-semibold text-[#926d25]">
                           {item.price}
                         </span>
                       </div>
 
-                      <p className="mt-2 text-sm leading-6 text-white/50">
+                      <p className="mt-2 leading-7 text-black/55">
                         {item.description}
                       </p>
-                    </div>
+                    </article>
                   ))}
                 </div>
-              </div>
+              </section>
             ))}
           </div>
         </div>
       </section>
 
-      {/* GALLERY LARGE */}
-      <section className="bg-[#f6f1e8] px-6 py-24 lg:px-8">
+      {/* GALERIE */}
+      <section className="bg-[#eae2d5] px-5 py-24 md:px-8">
         <div className="mx-auto max-w-7xl">
-          <div className="mb-10 text-center">
-            <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#bd8b27]">
-              Impressionen
+          <div className="mb-12">
+            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#a37c2f]">
+              Einblicke
             </p>
-            <h2 className="mt-3 font-serif text-4xl text-[#0c1b2d] md:text-5xl">
-              Restaurant Adria
+
+            <h2 className="mt-4 text-4xl font-semibold md:text-5xl">
+              Willkommen bei Adria
             </h2>
           </div>
 
-          <div className="grid gap-5 md:grid-cols-2">
-            <div className="relative min-h-[500px] overflow-hidden">
-              <Image
-                src="/restaurant-1.jpg"
-                alt="Gastraum Restaurant Adria"
-                fill
-                className="object-cover transition duration-700 hover:scale-105"
+          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+            <div className="h-[420px] overflow-hidden rounded-[26px]">
+              <RestaurantImage
+                src={restaurantImage1}
+                alt="Restaurant Adria Innenraum"
               />
             </div>
 
-            <div className="grid gap-5">
-              <div className="relative min-h-[240px] overflow-hidden">
-                <Image
-                  src="/restaurant-3.jpg"
-                  alt="Restaurant Adria Theke"
-                  fill
-                  className="object-cover transition duration-700 hover:scale-105"
-                />
-              </div>
+            <div className="h-[420px] overflow-hidden rounded-[26px]">
+              <RestaurantImage
+                src={restaurantImage2}
+                alt="Weinbereich Restaurant Adria"
+              />
+            </div>
 
-              <div className="grid gap-5 sm:grid-cols-2">
-                <div className="relative min-h-[240px] overflow-hidden">
-                  <Image
-                    src="/restaurant-2.jpg"
-                    alt="Weinauswahl Restaurant Adria"
-                    fill
-                    className="object-cover transition duration-700 hover:scale-105"
-                  />
-                </div>
+            <div className="h-[420px] overflow-hidden rounded-[26px]">
+              <RestaurantImage
+                src={restaurantImage3}
+                alt="Bar Restaurant Adria"
+              />
+            </div>
 
-                <div className="relative min-h-[240px] overflow-hidden">
-                  <Image
-                    src="/restaurant-4.jpg"
-                    alt="Außenbereich Restaurant Adria"
-                    fill
-                    className="object-cover transition duration-700 hover:scale-105"
-                  />
-                </div>
-              </div>
+            <div className="h-[420px] overflow-hidden rounded-[26px]">
+              <RestaurantImage
+                src={restaurantImage4}
+                alt="Außenbereich Restaurant Adria"
+              />
             </div>
           </div>
         </div>
       </section>
 
-      {/* CONTACT */}
-      <section id="kontakt" className="bg-[#0b1725] px-6 py-24 text-white lg:px-8">
-        <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-2">
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-[#d4a437]">
-              Restaurant Adria
-            </p>
-
-            <h2 className="mt-4 font-serif text-5xl">
-              Wir freuen uns
-              <span className="block text-[#d4a437]">auf Ihren Besuch.</span>
-            </h2>
-
-            <div className="mt-9 space-y-4 text-white/70">
-              <p>
-                <span className="text-[#d4a437]">Adresse:</span>
-                <br />
-                Mühlenstraße 29
-                <br />
-                27356 Rotenburg
+      {/* KONTAKT */}
+      <section id="kontakt" className="bg-[#11100e] px-5 py-24 text-white md:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid gap-14 lg:grid-cols-2">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#d8b66b]">
+                Kontakt & Reservierung
               </p>
 
-              <p>
-                <span className="text-[#d4a437]">Telefon:</span>
-                <br />
-                <a
-                  href="tel:+49426182301"
-                  className="text-xl text-white hover:text-[#d4a437]"
-                >
-                  04261 82301
-                </a>
+              <h2 className="mt-4 text-4xl font-semibold md:text-5xl">
+                Wir freuen uns auf Ihren Besuch
+              </h2>
+
+              <p className="mt-6 max-w-xl text-lg leading-8 text-white/60">
+                Reservierungen nehmen wir gerne telefonisch entgegen.
               </p>
+
+              <a
+                href="tel:+49426182301"
+                className="mt-8 inline-flex rounded-full bg-[#d8b66b] px-7 py-3.5 font-semibold text-[#17130f] transition hover:bg-[#e3c47d]"
+              >
+                04261 82301 anrufen
+              </a>
             </div>
 
-            <a
-              href="tel:+49426182301"
-              className="mt-8 inline-block bg-[#d4a437] px-7 py-4 font-semibold text-black"
-            >
-              Jetzt telefonisch reservieren
-            </a>
-          </div>
+            <div className="grid gap-8 sm:grid-cols-2">
+              <div className="rounded-[26px] border border-white/10 bg-white/[0.04] p-7">
+                <h3 className="text-xl font-semibold text-[#d8b66b]">
+                  Adresse
+                </h3>
 
-          <div className="border border-[#d4a437]/30 bg-black/15 p-8 md:p-10">
-            <p className="text-xs uppercase tracking-[0.28em] text-[#d4a437]">
-              Öffnungszeiten
-            </p>
+                <p className="mt-5 leading-7 text-white/70">
+                  Restaurant Adria
+                  <br />
+                  Mühlenstraße 29
+                  <br />
+                  27356 Rotenburg
+                </p>
+              </div>
 
-            <div className="mt-7 space-y-5">
-              <OpeningRow
-                day="Dienstag – Sonntag"
-                time="11:30 – 14:30 Uhr"
-              />
-              <OpeningRow day="" time="17:30 – 23:00 Uhr" />
-              <OpeningRow day="Montag" time="Ruhetag" />
-            </div>
+              <div className="rounded-[26px] border border-white/10 bg-white/[0.04] p-7">
+                <h3 className="text-xl font-semibold text-[#d8b66b]">
+                  Öffnungszeiten
+                </h3>
 
-            <div className="mt-8 border-t border-white/10 pt-8">
-              <p className="font-serif text-2xl text-[#d4a437]">
-                Balkan- und internationale Küche
-              </p>
-              <p className="mt-3 text-sm leading-6 text-white/50">
-                Traditioneller Geschmack, ausgewählte Spezialitäten und
-                herzliche Gastfreundschaft in Rotenburg.
-              </p>
+                <div className="mt-5 space-y-3 text-white/70">
+                  <p>
+                    Dienstag – Sonntag
+                    <br />
+                    11:30 – 14:30 Uhr
+                  </p>
+
+                  <p>
+                    Dienstag – Sonntag
+                    <br />
+                    17:30 – 23:00 Uhr
+                  </p>
+
+                  <p>
+                    Montag
+                    <br />
+                    Ruhetag
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer className="border-t border-[#d4a437]/15 bg-[#06090d] px-6 py-10 text-white">
-        <div className="mx-auto flex max-w-7xl flex-col gap-6 text-center md:flex-row md:items-center md:justify-between md:text-left">
-          <div>
-            <p className="font-serif text-2xl tracking-[0.14em]">ADRIA</p>
-            <p className="mt-1 text-[10px] uppercase tracking-[0.3em] text-[#d4a437]">
-              Balkan- und internationale Küche
-            </p>
-          </div>
+      <footer className="border-t border-white/10 bg-[#11100e] px-5 py-8 text-white/50 md:px-8">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 text-sm md:flex-row md:items-center md:justify-between">
+          <p>© 2026 Restaurant Adria Rotenburg</p>
 
-          <p className="text-xs text-white/35">
-            © 2026 Restaurant Adria · Rotenburg
-          </p>
-
-          <a
-            href="tel:+49426182301"
-            className="text-sm text-[#d4a437]"
-          >
-            04261 82301
-          </a>
+          <p>Balkan- und internationale Küche</p>
         </div>
       </footer>
     </main>
-  );
-}
-
-function PhotoCard({
-  src,
-  title,
-  text,
-}: {
-  src: string;
-  title: string;
-  text: string;
-}) {
-  return (
-    <div className="overflow-hidden bg-white shadow-sm">
-      <div className="relative h-56 overflow-hidden">
-        <Image
-          src={src}
-          alt={title}
-          fill
-          className="object-cover transition duration-700 hover:scale-105"
-        />
-      </div>
-
-      <div className="p-6 text-center">
-        <h3 className="font-serif text-xl text-[#0c1b2d]">{title}</h3>
-        <p className="mt-3 text-sm leading-6 text-black/55">{text}</p>
-      </div>
-    </div>
-  );
-}
-
-function OpeningRow({ day, time }: { day: string; time: string }) {
-  return (
-    <div className="flex justify-between gap-6 border-b border-white/10 pb-4">
-      <span className="text-white/55">{day}</span>
-      <span className="text-right font-medium">{time}</span>
-    </div>
   );
 }
