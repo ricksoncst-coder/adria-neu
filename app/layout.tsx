@@ -20,9 +20,9 @@ export const metadata: Metadata = {
 
     images: [
       {
-        url: "/adria-whatsapp.png",
+        url: "/logo-whatsapp.png",
         width: 1200,
-        height: 630,
+        height: 1200,
         alt: "Restaurant Adria Rotenburg – Balkan- und internationale Küche",
       },
     ],
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     title: "Restaurant Adria Rotenburg",
     description:
       "Balkan- und internationale Küche in Rotenburg (Wümme).",
-    images: ["/adria-whatsapp.png"],
+    images: ["/logo-whatsapp.png"],
   },
 };
 
