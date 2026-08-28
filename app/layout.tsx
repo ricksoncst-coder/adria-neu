@@ -27,6 +27,50 @@ export const metadata: Metadata = {
   },
 };
 
+const restaurantJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Restaurant",
+  name: "Restaurant Adria",
+  url: "https://www.adriarotenburg.de",
+  telephone: "+49 4261 82301",
+  servesCuisine: ["Balkan", "Internationale Küche"],
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "Mühlenstraße 29",
+    postalCode: "27356",
+    addressLocality: "Rotenburg (Wümme)",
+    addressCountry: "DE",
+  },
+  openingHoursSpecification: [
+    {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: [
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+      ],
+      opens: "11:30",
+      closes: "14:30",
+    },
+    {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: [
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+      ],
+      opens: "17:30",
+      closes: "23:00",
+    },
+  ],
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -34,7 +78,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="de">
-      <body>{children}</body>
+      <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(restaurantJsonLd),
+          }}
+        />
+        {children}
+      </body>
     </html>
   );
 }
