@@ -17,6 +17,15 @@ export const metadata: Metadata = {
     siteName: "Restaurant Adria Rotenburg",
     locale: "de_DE",
     type: "website",
+
+    images: [
+      {
+        url: "/adria-whatsapp.png",
+        width: 1200,
+        height: 630,
+        alt: "Restaurant Adria Rotenburg – Balkan- und internationale Küche",
+      },
+    ],
   },
 
   twitter: {
@@ -24,6 +33,7 @@ export const metadata: Metadata = {
     title: "Restaurant Adria Rotenburg",
     description:
       "Balkan- und internationale Küche in Rotenburg (Wümme).",
+    images: ["/adria-whatsapp.png"],
   },
 };
 
@@ -34,13 +44,15 @@ const restaurantJsonLd = {
   url: "https://www.adriarotenburg.de",
   telephone: "+49 4261 82301",
   servesCuisine: ["Balkan", "Internationale Küche"],
+
   address: {
     "@type": "PostalAddress",
-    streetAddress: "Mühlenstraße 29",
+    streetAddress: "Am Markt 12",
     postalCode: "27356",
     addressLocality: "Rotenburg (Wümme)",
     addressCountry: "DE",
   },
+
   openingHoursSpecification: [
     {
       "@type": "OpeningHoursSpecification",
